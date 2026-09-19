@@ -20,11 +20,11 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@/frontend/*": ["./frontend/*"],
-      "@/backend/*": ["./backend/*"],
-      "gsap/InertiaPlugin": ["./frontend/shims/gsap-inertia"],
-      "gsap/SplitText": ["./frontend/shims/gsap-split-text"],
-      "react-router-dom": ["./frontend/shims/react-router-dom"]
+      "@/frontend/*": ["./*"],
+      "@/backend/*": ["./*"],
+      "gsap/InertiaPlugin": ["./shims/gsap-inertia"],
+      "gsap/SplitText": ["./shims/gsap-split-text"],
+      "react-router-dom": ["./shims/react-router-dom"]
     }
   },
   "include": [
@@ -35,5 +35,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "backend/server.ts"]
+  "exclude": ["node_modules"]
 }

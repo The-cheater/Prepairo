@@ -217,7 +217,6 @@ drop policy if exists "Public can view suggestions" on public.subject_suggestion
 create policy "Public can view suggestions" on public.subject_suggestions
   for select using (true);
 
-
 -- ============================================================
 -- Leaderboard View (top contributors by credits)
 -- ============================================================

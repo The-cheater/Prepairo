@@ -5,17 +5,20 @@ import path from "path";
 const nextConfig: NextConfig = {
   turbopack: {
     resolveAlias: {
-      "gsap/InertiaPlugin": "./frontend/shims/gsap-inertia.ts",
-      "gsap/SplitText": "./frontend/shims/gsap-split-text.ts",
-      "react-router-dom": "./frontend/shims/react-router-dom.tsx",
+      "gsap/InertiaPlugin": "./shims/gsap-inertia.ts",
+      "gsap/SplitText": "./shims/gsap-split-text.ts",
+      "react-router-dom": "./shims/react-router-dom.tsx",
     },
   },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
-      "gsap/InertiaPlugin": path.resolve(__dirname, "frontend/shims/gsap-inertia.ts"),
-      "gsap/SplitText": path.resolve(__dirname, "frontend/shims/gsap-split-text.ts"),
-      "react-router-dom": path.resolve(__dirname, "frontend/shims/react-router-dom.tsx"),
+      "gsap/InertiaPlugin": path.resolve(__dirname, "shims/gsap-inertia.ts"),
+      "gsap/SplitText": path.resolve(__dirname, "shims/gsap-split-text.ts"),
+      "react-router-dom": path.resolve(__dirname, "shims/react-router-dom.tsx"),
+      "@/backend": path.resolve(__dirname, "."),
+      "@/frontend": path.resolve(__dirname, "."),
+      "@": path.resolve(__dirname, "."),
     };
     return config;
   },
