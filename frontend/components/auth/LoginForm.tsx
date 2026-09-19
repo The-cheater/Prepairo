@@ -1,15 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from './AuthProvider';
-import { Sparkles, AlertCircle, ArrowRight } from 'lucide-react';
+import { Sparkles, AlertCircle } from 'lucide-react';
 
-export default function LoginForm() {
+function LoginFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlError = searchParams.get('error');
+
   const { loginWithGoogle, login } = useAuth();
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const displayError = error || urlError;
 
   const handleGoogleSignIn = async () => {
     setError('');
@@ -45,10 +50,10 @@ export default function LoginForm() {
           </p>
         </div>
 
-        {error && (
+        {displayError && (
           <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-600" />
-            <span>{error}</span>
+            <span>{displayError}</span>
           </div>
         )}
 
@@ -110,3 +115,12 @@ export default function LoginForm() {
     </div>
   );
 }
+
+export default function LoginForm() {
+  return (
+    <Suspense fallback={<div className="w-full max-w-md mx-auto h-96 bg-white rounded-[32px] animate-pulse" />}>
+      <LoginFormContent />
+    </Suspense>
+  );
+}
+

@@ -183,7 +183,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       const origin = typeof window !== 'undefined' ? window.location.origin : '';
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${origin}/api/auth/callback`,
@@ -196,11 +196,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         setIsLoading(false);
+        console.error('Supabase signInWithOAuth error:', error);
         return { error: error.message };
+      }
+
+      // If Supabase returns a direct OAuth URL, redirect browser
+      if (data?.url) {
+        window.location.href = data.url;
       }
       return {};
     } catch (err: any) {
       setIsLoading(false);
+      console.error('Google OAuth exception:', err);
       return { error: err?.message || 'Google OAuth sign-in failed' };
     }
   };
