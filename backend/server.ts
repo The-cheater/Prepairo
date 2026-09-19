@@ -461,11 +461,16 @@ app.patch('/api/profile', async (req: Request, res: Response) => {
 });
 
 // Start Express Server
-app.listen(PORT, () => {
-  console.log(`=============================================`);
-  console.log(`🚀 Prepairo Backend API Server is running!`);
-  console.log(`📡 Local URL:    http://localhost:${PORT}`);
-  console.log(`🌐 Frontend URL: ${FRONTEND_URL}`);
-  console.log(`🩺 Health check: http://localhost:${PORT}/api/health`);
-  console.log(`=============================================`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`=============================================`);
+    console.log(`🚀 Prepairo Backend API Server is running!`);
+    console.log(`📡 Local URL:    http://localhost:${PORT}`);
+    console.log(`🌐 Frontend URL: ${FRONTEND_URL}`);
+    console.log(`🩺 Health check: http://localhost:${PORT}/api/health`);
+    console.log(`=============================================`);
+  });
+}
+
+export default app;
+
