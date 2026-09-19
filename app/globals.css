@@ -1,0 +1,139 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap');
+@import url('https://fonts.cdnfonts.com/css/cal-sans');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #09090b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --border: #e4e4e7;
+  --card: #ffffff;
+  --card-foreground: #09090b;
+  --font-satoshi: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-cal: 'Cal Sans', sans-serif;
+  --font-serif-italic: 'Instrument Serif', Georgia, serif;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background-color: #ffffff;
+  color: #09090b;
+  font-family: var(--font-satoshi);
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-cal), var(--font-satoshi);
+  letter-spacing: -0.03em;
+}
+
+.font-cal {
+  font-family: var(--font-cal), var(--font-satoshi);
+  letter-spacing: -0.03em;
+}
+
+.font-serif-accent {
+  font-family: var(--font-serif-italic);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.font-satoshi {
+  font-family: var(--font-satoshi);
+}
+
+/* Glassmorphism token */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(228, 228, 231, 0.8);
+}
+
+/* Card Lift Animation */
+.hover-lift {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.08);
+}
+
+/* Black Pill Button */
+.btn-pill-black {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: #000000;
+  color: #ffffff;
+  padding: 0.625rem 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.btn-pill-black:hover {
+  background-color: #27272a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+/* White Pill Button */
+.btn-pill-white {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: #ffffff;
+  color: #09090b;
+  border: 1px solid #e4e4e7;
+  padding: 0.625rem 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-pill-white:hover {
+  background-color: #f4f4f5;
+  border-color: #d4d4d8;
+}
+
+/* Pill Badge */
+.pill-tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #fafafa;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d4d8;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
+}

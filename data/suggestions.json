@@ -1,0 +1,24 @@
+[
+  {
+    "id": "sug-1",
+    "suggestedName": "Advanced Quantum Field Theory",
+    "courseCode": "PHY502",
+    "schoolName": "School of Physics",
+    "semester": 9,
+    "studentName": "Vivek K.",
+    "status": "pending",
+    "adminNotes": "Elective offered in Fall 2024 semester.",
+    "createdAt": "2025-01-07T11:20:00Z"
+  },
+  {
+    "id": "sug-2",
+    "suggestedName": "Reinforcement Learning & Robotics",
+    "courseCode": "DSC510",
+    "schoolName": "School of Data Science",
+    "semester": 8,
+    "studentName": "Sanjay Nair",
+    "status": "pending",
+    "adminNotes": "New course initiated by visiting faculty.",
+    "createdAt": "2025-01-08T16:45:00Z"
+  }
+]
