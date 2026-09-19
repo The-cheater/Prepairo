@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import DotGrid from '@/frontend/components/react-bits/DotGrid';
 import { Search, ArrowRight, UploadCloud } from 'lucide-react';
 import Link from 'next/link';
 import CommandSearch from '@/frontend/components/search/CommandSearch';
@@ -26,23 +25,7 @@ export default function HeroSection() {
 
   return (
     <div className="relative w-full overflow-hidden pt-6 pb-20 sm:pt-10 sm:pb-28">
-      
-      {/* Background Interactive Dot Grid */}
-      <div className="absolute inset-0 pointer-events-auto opacity-30 z-0 h-[650px] overflow-hidden">
-        <DotGrid
-          dotSize={4}
-          gap={24}
-          baseColor="#71717a"
-          activeColor="#09090b"
-          proximity={140}
-          shockRadius={200}
-          shockStrength={4}
-          resistance={600}
-          returnDuration={1.2}
-        />
-        {/* Soft bottom fade gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-white pointer-events-none" />
-      </div>
+
 
       {/* Main Centered Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8">

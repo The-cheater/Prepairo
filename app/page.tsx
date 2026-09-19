@@ -9,7 +9,6 @@ import PaperCard from '@/frontend/components/papers/PaperCard';
 import { PaperRecord } from '@/backend/models/mock-papers';
 import { ArrowRight, Sparkles, UploadCloud } from 'lucide-react';
 import Link from 'next/link';
-import CurvedLoop from '@/frontend/components/react-bits/CurvedLoop';
 import { getApiUrl } from '@/frontend/lib/api';
 
 export default function HomePage() {
@@ -36,17 +35,6 @@ export default function HomePage() {
       {/* 1. Hero Section */}
       <HeroSection />
 
-      {/* Interactive Curved Loop Marquee Banner */}
-      <div className="w-full bg-zinc-950 text-white py-3 overflow-hidden border-y border-zinc-800">
-        <CurvedLoop
-          marqueeText="PREPAIRO ✦ IISER THIRUVANANTHAPURAM ✦ PREPARE SMARTER, TOGETHER ✦ PAST EXAMS ✦"
-          speed={2}
-          curveAmount={120}
-          direction="left"
-          interactive={true}
-          className="text-amber-400 font-bold"
-        />
-      </div>
 
       {/* 2. Platform Metrics from Backend */}
       <StatTiles />
@@ -58,7 +46,7 @@ export default function HomePage() {
       <RequestCarousel />
 
       {/* 5. Recent Verified Question Papers */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-transparent border-t border-zinc-100/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
@@ -100,7 +88,7 @@ export default function HomePage() {
       </section>
 
       {/* 6. Community Mission / Contribute Callout */}
-      <section className="py-16 bg-zinc-50 border-t border-zinc-100">
+      <section className="py-16 bg-transparent border-t border-zinc-100/80">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-zinc-950 text-white rounded-[32px] p-8 sm:p-12 text-center space-y-6 relative overflow-hidden">
             <div className="relative z-10 space-y-3 max-w-2xl mx-auto">

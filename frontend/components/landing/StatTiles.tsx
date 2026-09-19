@@ -73,7 +73,7 @@ export default function StatTiles() {
   ];
 
   return (
-    <section className="py-16 border-t border-zinc-100 bg-white">
+    <section className="py-16 border-t border-zinc-100/80 bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
