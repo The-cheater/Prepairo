@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/backend/supabase/client';
 import { User } from '@supabase/supabase-js';
+import ProfileSetupModal from './ProfileSetupModal';
 
 export interface UserProfile {
   id: string;
@@ -10,11 +11,13 @@ export interface UserProfile {
   fullName: string;
   course: string;
   department: string;
+  batch?: string;
   avatarUrl?: string;
   totalCredits: number;
   redeemedCredits: number;
   papersApproved: number;
   role: 'student' | 'admin';
+  hasCompletedProfile?: boolean;
 }
 
 interface AuthContextType {
@@ -34,6 +37,9 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   updateProfile: (data: Partial<UserProfile>) => Promise<{ error?: string }>;
+  isProfileSetupOpen: boolean;
+  openProfileSetup: () => void;
+  closeProfileSetup: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,7 +50,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isProfileSetupOpen, setIsProfileSetupOpen] = useState(false);
   const supabase = createClient();
+
+  const openProfileSetup = () => setIsProfileSetupOpen(true);
+  const closeProfileSetup = () => setIsProfileSetupOpen(false);
 
   const fetchProfile = useCallback(async (userId: string) => {
     try {
@@ -55,18 +65,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       if (data && !error) {
-        setProfile({
+        // Extract Google user avatar if Supabase profile avatar is empty or needs sync
+        let googleAvatar = '';
+        try {
+          const { data: userData } = await supabase.auth.getUser();
+          googleAvatar = userData?.user?.user_metadata?.avatar_url || userData?.user?.user_metadata?.picture || '';
+        } catch {}
+
+        const effectiveAvatar = data.avatar_url || googleAvatar;
+
+        // Auto-sync Google avatar to Supabase profile if currently empty
+        if (!data.avatar_url && googleAvatar) {
+          try {
+            await supabase.from('profiles').update({ avatar_url: googleAvatar }).eq('id', userId);
+          } catch {}
+        }
+
+        const isCompleted = Boolean(data.batch && data.department && data.full_name && data.full_name !== 'IISER Student');
+
+        const loadedProfile: UserProfile = {
           id: data.id,
           username: data.username,
           fullName: data.full_name,
           course: data.course || 'BS-MS',
           department: data.department || 'Foundation',
-          avatarUrl: data.avatar_url,
+          batch: data.batch || '',
+          avatarUrl: effectiveAvatar,
           totalCredits: data.total_credits || 0,
           redeemedCredits: data.redeemed_credits || 0,
           papersApproved: data.papers_approved || 0,
           role: data.role || 'student',
-        });
+          hasCompletedProfile: isCompleted,
+        };
+
+        setProfile(loadedProfile);
+        localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(loadedProfile));
+
+        // If user hasn't set up their details yet, prompt the modal
+        if (!isCompleted) {
+          setIsProfileSetupOpen(true);
+        }
         return;
       }
     } catch (e) {
@@ -90,11 +128,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           fullName,
           course: 'BS-MS',
           department: 'Foundation',
+          batch: 'Batch 2026',
           avatarUrl,
           totalCredits: 10,
           redeemedCredits: 0,
           papersApproved: 0,
           role: 'student',
+          hasCompletedProfile: false,
         };
 
         try {
@@ -105,6 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             avatar_url: avatarUrl,
             course: 'BS-MS',
             department: 'Foundation',
+            batch: 'Batch 2026',
             total_credits: 10,
             role: 'student',
           });
@@ -112,6 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         setProfile(newProfile);
         localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(newProfile));
+        setIsProfileSetupOpen(true);
         return;
       }
     } catch {}
@@ -353,19 +395,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!profile) return { error: 'Not logged in' };
-    const updated = { ...profile, ...updates };
+    const updated: UserProfile = { ...profile, ...updates, hasCompletedProfile: true };
     setProfile(updated);
     localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(updated));
 
     try {
+      const dbUpdates: Record<string, any> = {};
+      if (updates.fullName !== undefined) dbUpdates.full_name = updates.fullName;
+      if (updates.course !== undefined) dbUpdates.course = updates.course;
+      if (updates.department !== undefined) dbUpdates.department = updates.department;
+      if (updates.batch !== undefined) dbUpdates.batch = updates.batch;
+      if (updates.avatarUrl !== undefined) dbUpdates.avatar_url = updates.avatarUrl;
+
       await supabase
         .from('profiles')
-        .update({
-          full_name: updated.fullName,
-          course: updated.course,
-          department: updated.department,
-          avatar_url: updated.avatarUrl,
-        })
+        .update(dbUpdates)
         .eq('id', profile.id);
     } catch (e) {
       console.warn('Failed to update profile on supabase:', e);
@@ -385,9 +429,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         refreshProfile,
         updateProfile,
+        isProfileSetupOpen,
+        openProfileSetup,
+        closeProfileSetup,
       }}
     >
       {children}
+      <ProfileSetupModal />
     </AuthContext.Provider>
   );
 }

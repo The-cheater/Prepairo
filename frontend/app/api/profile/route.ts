@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userId, fullName, course, department, avatarUrl } = body;
+    const { userId, fullName, course, department, batch, avatarUrl } = body;
 
     if (!userId) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
@@ -55,6 +55,7 @@ export async function PATCH(req: NextRequest) {
     if (fullName) updates.full_name = fullName;
     if (course) updates.course = course;
     if (department) updates.department = department;
+    if (batch !== undefined) updates.batch = batch;
     if (avatarUrl !== undefined) updates.avatar_url = avatarUrl;
 
     const { data, error } = await supabase

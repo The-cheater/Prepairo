@@ -19,7 +19,7 @@ export async function GET() {
         .map(p => p.uploaderName)
         .filter(name => name && name.toLowerCase() !== 'anonymous')
     );
-    const contributorsCount = contributorsSet.size || 1;
+    const contributorsCount = contributorsSet.size;
 
     const requestsFulfilled = requests.filter(r => r.status === 'fulfilled').length;
     const openRequests = requests.filter(r => r.status === 'open').length;

@@ -31,7 +31,7 @@ const REDEEM_THRESHOLD = 499;
 const MAX_AVATAR_SIZE_BYTES = 500 * 1024; // strictly 500 KB limit
 
 export default function UserDashboard() {
-  const { user, profile, updateProfile, refreshProfile } = useAuth();
+  const { user, profile, updateProfile, refreshProfile, openProfileSetup } = useAuth();
   const [papers, setPapers] = useState<PaperRecord[]>([]);
   const [isLoadingPapers, setIsLoadingPapers] = useState(true);
   const [selectedPaper, setSelectedPaper] = useState<PaperRecord | null>(null);
@@ -139,20 +139,20 @@ export default function UserDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: profile.id,
-          amount: REDEEM_THRESHOLD,
-          paymentInfo: paymentInfo.trim(),
-        }),
+          amountCredits: REDEEM_THRESHOLD,
+          paymentDetails: paymentInfo.trim()
+        })
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        setRedeemError(data.error || 'Failed to submit redeem request.');
+      if (res.ok) {
+        setRedeemMessage('Redemption request submitted! Admin will verify and process transfer within 24–48 hours.');
+        await refreshProfile();
       } else {
-        setRedeemMessage(data.message || 'Redeem request submitted successfully!');
-        refreshProfile();
+        setRedeemError(data.error || 'Failed to submit redemption request.');
       }
-    } catch (err: any) {
-      setRedeemError(err?.message || 'Network error');
+    } catch {
+      setRedeemError('Network error. Please try again later.');
     } finally {
       setRedeemSubmitting(false);
     }
@@ -160,19 +160,12 @@ export default function UserDashboard() {
 
   if (!profile) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <div className="bg-white rounded-[32px] border border-zinc-200 p-12 shadow-sm space-y-4">
-          <User className="w-12 h-12 text-zinc-400 mx-auto" />
-          <h2 className="font-cal text-2xl font-bold text-zinc-900">Please Sign In</h2>
-          <p className="text-xs text-zinc-500 max-w-sm mx-auto">
-            You need to be signed in to view your dashboard, check credit balance, and track question papers.
-          </p>
-          <div className="pt-2">
-            <Link href="/login" className="btn-pill-black text-xs px-6 py-2.5 inline-flex">
-              Sign In to Prepairo
-            </Link>
-          </div>
-        </div>
+      <div className="max-w-xl mx-auto px-4 py-20 text-center space-y-4">
+        <h2 className="font-cal text-2xl font-bold text-zinc-900">Sign In to View Dashboard</h2>
+        <p className="text-sm text-zinc-500">Track your uploaded question papers, check verification feedback, and redeem reward credits.</p>
+        <Link href="/login" className="btn-pill-black text-xs px-6 py-3 inline-block">
+          Go to Sign In
+        </Link>
       </div>
     );
   }
@@ -197,17 +190,17 @@ export default function UserDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* Left: Student Profile Card */}
-        <div className="lg:col-span-5 bg-white rounded-[28px] sm:rounded-[32px] border border-zinc-200 p-5 sm:p-8 shadow-sm space-y-6">
+        <div className="lg:col-span-5 bg-card text-card-foreground rounded-[28px] sm:rounded-[32px] border border-border p-5 sm:p-8 shadow-sm space-y-6">
           <div className="flex items-start justify-between">
-            <span className="pill-tag bg-zinc-100 text-zinc-800 border border-zinc-200">
+            <span className="pill-tag bg-muted text-foreground border border-border">
               Student Profile
             </span>
             <button
-              onClick={() => setIsEditingProfile(!isEditingProfile)}
-              className="text-xs font-semibold text-zinc-600 hover:text-black flex items-center gap-1 transition-colors cursor-pointer"
+              onClick={openProfileSetup}
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors cursor-pointer"
             >
               <Edit2 className="w-3.5 h-3.5" />
-              {isEditingProfile ? 'Cancel' : 'Edit Profile'}
+              <span>Edit Profile</span>
             </button>
           </div>
 
@@ -252,12 +245,17 @@ export default function UserDashboard() {
               </h2>
               <p className="text-xs font-mono text-zinc-400">@{profile.username}</p>
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 pt-1">
-                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-zinc-100 text-zinc-800">
+                <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200">
                   {profile.course}
                 </span>
-                <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-zinc-50 border border-zinc-200 text-zinc-600">
+                <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300">
                   {profile.department}
                 </span>
+                {profile.batch && (
+                  <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400">
+                    {profile.batch}
+                  </span>
+                )}
               </div>
             </div>
           </div>

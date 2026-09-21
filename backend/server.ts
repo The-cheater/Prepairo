@@ -429,7 +429,7 @@ app.get('/api/profile', async (req: Request, res: Response) => {
 
 app.patch('/api/profile', async (req: Request, res: Response) => {
   try {
-    const { userId, fullName, course, department, avatarUrl } = req.body;
+    const { userId, fullName, course, department, batch, avatarUrl } = req.body;
     if (!userId) return res.status(400).json({ error: 'User ID is required' });
 
     // Validate avatar size < 500KB
@@ -449,12 +449,13 @@ app.patch('/api/profile', async (req: Request, res: Response) => {
       if (fullName) updates.full_name = fullName;
       if (course) updates.course = course;
       if (department) updates.department = department;
+      if (batch !== undefined) updates.batch = batch;
       if (avatarUrl !== undefined) updates.avatar_url = avatarUrl;
 
       await supabase.from('profiles').update(updates).eq('id', userId);
     } catch {}
 
-    res.json({ success: true, profile: { id: userId, fullName, course, department, avatarUrl } });
+    res.json({ success: true, profile: { id: userId, fullName, course, department, batch, avatarUrl } });
   } catch (error: any) {
     res.status(500).json({ error: error?.message || 'Server error' });
   }
