@@ -6,9 +6,14 @@ import { AuthProvider } from '@/frontend/components/auth/AuthProvider';
 import GlobalBackground from '@/frontend/components/layout/GlobalBackground';
 
 export const metadata: Metadata = {
-  title: 'Prepairo — Prepare Smarter, Together | IISER TVM Question Paper Platform',
-  description: 'Prepairo: A gamified, student-driven previous year question paper platform for IISER Thiruvananthapuram. Upload verified past exams, earn credits, and climb the leaderboard.',
-  keywords: ['Prepairo', 'IISER', 'IISER TVM', 'Previous Year Questions', 'PYQ', 'Question Papers', 'BS-MS', 'Physics', 'Biology', 'Chemistry', 'Data Science', 'Mathematics'],
+  title: 'Prepairo — Prepare Smarter, Together',
+  description: 'Upload your past exam papers, get verified by admins, and earn credits towards real cash rewards. Plus, get 10 free bonus credits as soon as you sign in!',
+  keywords: ['Prepairo', 'Question Papers', 'Past Exams', 'PYQ', 'Student Notes', 'Exam Prep'],
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({
@@ -19,6 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <head>
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <script
           dangerouslySetInnerHTML={{
             __html: `

@@ -25,18 +25,18 @@ export default function GlobalBackground() {
 
   return (
     <div 
-      className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-20 dark:opacity-25 transition-opacity duration-300" 
+      className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-[0.08] dark:opacity-[0.10] transition-opacity duration-300" 
       aria-hidden="true"
     >
       <DotGrid
         key={isDark ? 'dark-grid' : 'light-grid'}
-        dotSize={4}
-        gap={28}
-        baseColor={isDark ? '#52525b' : '#a1a1aa'}
+        dotSize={3.5}
+        gap={30}
+        baseColor={isDark ? '#71717a' : '#a1a1aa'}
         activeColor={isDark ? '#ffffff' : '#09090b'}
-        proximity={140}
-        shockRadius={200}
-        shockStrength={4}
+        proximity={120}
+        shockRadius={180}
+        shockStrength={3}
         resistance={600}
         returnDuration={1.2}
       />

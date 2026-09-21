@@ -142,36 +142,36 @@ export default function UploadForm() {
 
   if (successRecord) {
     return (
-      <div className="bg-white rounded-[32px] border border-zinc-200 p-8 sm:p-12 text-center max-w-2xl mx-auto shadow-sm space-y-6 animate-in fade-in zoom-in-95 duration-200">
-        <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+      <div className="bg-white dark:bg-zinc-900 rounded-[32px] border border-zinc-200 dark:border-zinc-800 p-8 sm:p-12 text-center max-w-2xl mx-auto shadow-sm space-y-6 animate-in fade-in zoom-in-95 duration-200">
+        <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto">
           <CheckCircle2 className="w-10 h-10" />
         </div>
         <div className="space-y-2">
-          <h2 className="font-cal text-2xl sm:text-3xl font-bold text-zinc-950">
+          <h2 className="font-cal text-2xl sm:text-3xl font-bold text-zinc-950 dark:text-white">
             Paper Uploaded Successfully!
           </h2>
-          <p className="text-sm text-zinc-600 leading-relaxed max-w-lg mx-auto">
-            Your paper for <strong className="text-zinc-950">{successRecord.subjectName}</strong> ({successRecord.examYear}) has been uploaded and queued for admin verification.
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-lg mx-auto">
+            Your paper for <strong className="text-zinc-950 dark:text-white">{successRecord.subjectName}</strong> ({successRecord.examYear}) has been submitted. Our admin will check it shortly.
           </p>
         </div>
 
-        {/* Gamification Credit Notice */}
-        <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900 flex items-center gap-3 text-left">
+        {/* Credit Reward Notice */}
+        <div className="p-4 bg-amber-50 dark:bg-amber-950/40 rounded-2xl border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-300 flex items-center gap-3 text-left">
           <div className="w-9 h-9 rounded-xl bg-amber-400 text-amber-950 flex items-center justify-center flex-shrink-0 font-bold">
             <Zap className="w-5 h-5 fill-amber-950" />
           </div>
           <div>
-            <p className="font-bold text-amber-950">+10 Credits Pending Approval</p>
-            <p className="text-amber-800 text-[11px]">
-              Once the admin checks and approves your paper, 10 credits will be awarded to your dashboard and you&apos;ll move up the leaderboard!
+            <p className="font-bold text-amber-950 dark:text-amber-200">+10 Credits on Approval</p>
+            <p className="text-amber-800 dark:text-amber-400 text-[11px]">
+              Once the admin approves your paper, 10 credits will be added to your account. Reach 499 credits to cash out for real money!
             </p>
           </div>
         </div>
 
-        <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100 text-left text-xs text-zinc-600 space-y-1">
+        <div className="p-4 bg-zinc-50 dark:bg-zinc-800/60 rounded-2xl border border-zinc-100 dark:border-zinc-800 text-left text-xs text-zinc-600 dark:text-zinc-300 space-y-1">
           <p><strong>Status:</strong> Waiting for Admin Check</p>
           <p><strong>Contributed As:</strong> {successRecord.uploaderName}</p>
-          <p><strong>Exam Type:</strong> {successRecord.examType.toUpperCase()}</p>
+          <p><strong>Exam:</strong> {successRecord.examType.toUpperCase()}</p>
           <p><strong>File:</strong> {successRecord.fileName}</p>
         </div>
 
@@ -198,23 +198,23 @@ export default function UploadForm() {
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 bg-white rounded-[28px] sm:rounded-[32px] border border-zinc-200 p-4 sm:p-10 shadow-sm max-w-3xl mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 bg-white dark:bg-zinc-900 rounded-[28px] sm:rounded-[32px] border border-zinc-200 dark:border-zinc-800 p-4 sm:p-10 shadow-sm max-w-3xl mx-auto">
         
         {/* Form Title & Notice */}
-        <div className="space-y-2 pb-6 border-b border-zinc-100">
+        <div className="space-y-2 pb-6 border-b border-zinc-100 dark:border-zinc-800">
           <div className="flex items-center gap-2">
-            <span className="pill-tag bg-zinc-100 text-zinc-800 border border-zinc-200">
-              Community Contribution
+            <span className="pill-tag bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700">
+              Upload & Earn
             </span>
-            <span className="text-xs text-zinc-400 font-normal">
-              • PDF only • Max {MAX_FILE_SIZE_MB}MB
+            <span className="text-xs text-zinc-400 dark:text-zinc-500 font-normal">
+              • PDF only • Up to {MAX_FILE_SIZE_MB}MB
             </span>
           </div>
-          <h2 className="font-cal text-2xl sm:text-3xl font-bold text-zinc-950">
-            Upload Previous Year Question Paper
+          <h2 className="font-cal text-2xl sm:text-3xl font-bold text-zinc-950 dark:text-white">
+            Upload a Past Exam Paper
           </h2>
-          <p className="text-xs sm:text-sm text-zinc-500 font-normal leading-relaxed">
-            Fill in the course metadata carefully to ensure papers remain structured and effortless for future batches to find. Files are uploaded securely to the cloud.
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed">
+            Pick your subject and exam year, then attach your PDF. Once our admin checks and approves it, you earn 10 credits towards real cash rewards!
           </p>
         </div>
 
@@ -474,9 +474,9 @@ export default function UploadForm() {
         </div>
 
         {/* Section 4: Contributor Details & Anonymous Toggle */}
-        <div className="space-y-4 pt-4 border-t border-zinc-100">
-          <h3 className="text-xs font-semibold text-zinc-900 uppercase tracking-wider">
-            4. Contributor Acknowledgement
+        <div className="space-y-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+          <h3 className="text-xs font-semibold text-zinc-900 dark:text-white uppercase tracking-wider">
+            4. Your Name & Details
           </h3>
 
           <div className="space-y-3">
@@ -486,24 +486,24 @@ export default function UploadForm() {
                 type="checkbox"
                 checked={isAnonymous}
                 onChange={e => setIsAnonymous(e.target.checked)}
-                className="w-4 h-4 rounded border-zinc-300 text-black focus:ring-zinc-900 cursor-pointer"
+                className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-black dark:text-white focus:ring-zinc-900 cursor-pointer"
               />
-              <label htmlFor="anonymous-toggle" className="text-xs font-semibold text-zinc-800 cursor-pointer">
-                Contribute anonymously (Your name will not be shown publicly)
+              <label htmlFor="anonymous-toggle" className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 cursor-pointer">
+                Upload anonymously (your name will not be shown publicly)
               </label>
             </div>
 
             {!isAnonymous && (
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-zinc-700">
-                  Your Full Name or Handle
+                <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  Your Name or Display Name
                 </label>
                 <input
                   type="text"
                   value={uploaderName}
                   onChange={e => setUploaderName(e.target.value)}
-                  placeholder="e.g. Aravind S. (or leave blank to display 'Student Contributor')"
-                  className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-2xl text-xs sm:text-sm font-medium text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-950 transition-colors"
+                  placeholder="e.g. Rohan Jena (or leave blank to show 'Student Contributor')"
+                  className="w-full px-3.5 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-xs sm:text-sm font-medium text-zinc-900 dark:text-white focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:border-zinc-950 dark:focus:border-white transition-colors"
                 />
               </div>
             )}
@@ -511,24 +511,24 @@ export default function UploadForm() {
         </div>
 
         {/* Submit Bar */}
-        <div className="pt-6 border-t border-zinc-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs text-zinc-500 font-normal">
-            <ShieldCheck className="w-4 h-4 text-zinc-400" />
-            <span>Uploaded to Cloudinary • Reviewed by admin before listing</span>
+        <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 font-normal">
+            <ShieldCheck className="w-4 h-4 text-emerald-500" />
+            <span>Checked by admin • +10 credits awarded upon approval</span>
           </div>
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="btn-pill-black text-sm px-8 py-3 w-full sm:w-auto disabled:opacity-60"
+            className="btn-pill-black text-sm px-8 py-3 w-full sm:w-auto disabled:opacity-60 cursor-pointer"
           >
             {isSubmitting ? (
               <span className="flex items-center gap-2">
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Uploading to Cloud...
+                Uploading paper...
               </span>
             ) : (
-              'Submit Question Paper'
+              'Submit Exam Paper'
             )}
           </button>
         </div>

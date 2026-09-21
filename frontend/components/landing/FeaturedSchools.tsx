@@ -35,13 +35,13 @@ export default function FeaturedSchools() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
           <div>
             <span className="pill-tag bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 mb-3">
-              Curriculum Navigation
+              Browse by Department
             </span>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-950 dark:text-white font-cal">
-              Explore by School & Stream
+              Pick your branch or school
             </h2>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 font-normal mt-1">
-              Curated archive matching IISER TVM&apos;s foundational 2-year core and specialized discipline schools.
+              Find mid-sem, end-sem, and quiz papers categorized neatly for your courses.
             </p>
           </div>
 
@@ -49,7 +49,7 @@ export default function FeaturedSchools() {
             href="/browse"
             className="btn-pill-black text-xs px-5 py-2.5 flex items-center gap-1.5 self-start sm:self-auto"
           >
-            <span>All Subjects Catalog</span>
+            <span>See All Subjects</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>

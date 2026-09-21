@@ -4,6 +4,7 @@ import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from './AuthProvider';
 import { Sparkles, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
 
 function LoginFormContent() {
   const router = useRouter();
@@ -35,23 +36,23 @@ function LoginFormContent() {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="bg-white rounded-[32px] border border-zinc-200 p-8 sm:p-10 shadow-sm space-y-6">
+      <div className="bg-white dark:bg-zinc-900 rounded-[32px] border border-zinc-200 dark:border-zinc-800 p-8 sm:p-10 shadow-sm space-y-6">
         
         {/* Header */}
         <div className="space-y-2 text-center">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-xs font-semibold text-zinc-900">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Prepairo Authentication
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 text-xs font-semibold text-amber-800 dark:text-amber-300">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" /> +10 Free Credits upon Login
           </div>
-          <h1 className="font-cal text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950">
+          <h1 className="font-cal text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-white">
             Welcome to Prepairo
           </h1>
-          <p className="text-xs sm:text-sm text-zinc-500 font-normal">
-            Sign in with your Google or IISER TVM student account to manage uploads, view credits, and access your student dashboard.
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed">
+            Sign in with Google to get 10 free credits right away! Upload past papers, earn credits when approved by our admin, and redeem them for real cash rewards.
           </p>
         </div>
 
         {displayError && (
-          <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+          <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-300 text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-600" />
             <span>{displayError}</span>
           </div>
@@ -63,7 +64,7 @@ function LoginFormContent() {
             type="button"
             onClick={handleGoogleSignIn}
             disabled={isSubmitting}
-            className="w-full py-3.5 px-6 rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-900 text-sm font-semibold shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-60"
+            className="w-full py-3.5 px-6 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white text-sm font-semibold shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-60"
           >
             {/* Official Google SVG Logo */}
             <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
@@ -84,31 +85,22 @@ function LoginFormContent() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            <span>Continue with Google</span>
+            <span>{isSubmitting ? 'Signing in with Google...' : 'Continue with Google'}</span>
           </button>
 
-          <p className="text-[11px] text-zinc-400 text-center leading-relaxed">
-            Directly authenticates via Google OAuth with your IISER TVM student account or personal Gmail.
+          <p className="text-[11px] text-center text-zinc-400 dark:text-zinc-500">
+            Instant 1-click login • Profile photo & details sync automatically
           </p>
         </div>
 
-        {/* Quick Demo Login for offline / preview */}
-        <div className="pt-2">
-          <div className="relative flex py-2 items-center">
-            <div className="flex-grow border-t border-zinc-100"></div>
-            <span className="flex-shrink mx-3 text-[10px] text-zinc-400 font-medium uppercase">Or local preview</span>
-            <div className="flex-grow border-t border-zinc-100"></div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleDemoSignIn}
-            disabled={isSubmitting}
-            className="w-full py-2.5 px-4 rounded-full border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-xs font-semibold text-zinc-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            Quick Demo Student Sign In
-          </button>
+        {/* Footer info */}
+        <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800 text-center space-y-2">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Don&apos;t have an account?{' '}
+            <Link href="/register" className="font-semibold text-zinc-900 dark:text-white underline">
+              Sign up with Google
+            </Link>
+          </p>
         </div>
 
       </div>
@@ -118,9 +110,8 @@ function LoginFormContent() {
 
 export default function LoginForm() {
   return (
-    <Suspense fallback={<div className="w-full max-w-md mx-auto h-96 bg-white rounded-[32px] animate-pulse" />}>
+    <Suspense fallback={<div className="p-8 text-center text-zinc-400">Loading sign in...</div>}>
       <LoginFormContent />
     </Suspense>
   );
 }
-

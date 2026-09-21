@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, ArrowRight, UploadCloud } from 'lucide-react';
+import { Search, ArrowRight, UploadCloud, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import CommandSearch from '@/frontend/components/search/CommandSearch';
 import { getApiUrl } from '@/frontend/lib/api';
@@ -29,26 +29,29 @@ export default function HeroSection() {
       {/* Main Centered Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8">
         
-        {/* Floating Glass Pill Badge */}
+        {/* Floating Friendly Pill Badge */}
         <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full glass-card shadow-sm border border-zinc-200/80 dark:border-zinc-800 text-[11px] sm:text-xs font-semibold text-zinc-800 dark:text-zinc-200 animate-in fade-in slide-in-from-bottom-2 duration-500 max-w-full truncate">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
-          <span className="hidden sm:inline">Prepairo • IISER Thiruvananthapuram Academic Repository</span>
-          <span className="sm:hidden">Prepairo • IISER TVM</span>
+          <span>Prepairo</span>
+          <span className="text-zinc-300 dark:text-zinc-700">•</span>
+          <span className="text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
+            <Sparkles className="w-3 h-3 inline" /> 10 Free Credits on Sign In
+          </span>
           <span className="text-zinc-300 dark:text-zinc-700 hidden sm:inline">•</span>
-          <span className="text-zinc-500 dark:text-zinc-400 font-normal hidden md:inline">Prepare Smarter, Together</span>
+          <span className="text-zinc-500 dark:text-zinc-400 font-normal hidden md:inline">Made by students, for students</span>
         </div>
 
-        {/* Headline */}
+        {/* Friendly Headline */}
         <div className="space-y-3 sm:space-y-4 max-w-4xl mx-auto">
           <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-zinc-950 dark:text-white font-cal leading-[1.1]">
-            <span>Find every paper. </span>
+            <span>Find past exam papers. </span>
             <span className="font-serif-accent italic font-normal text-zinc-700 dark:text-zinc-300 block sm:inline">
-              Skip the scrolling.
+              Skip the stress.
             </span>
           </h1>
 
-          <p className="text-xs sm:text-base md:text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto font-normal leading-relaxed px-2">
-            A centralized, community-verified repository for mid-sems, end-sems, and quizzes. No dead drive links, no chaotic WhatsApp groups—just clean academic archives for seniors and juniors.
+          <p className="text-xs sm:text-base md:text-lg text-zinc-600 dark:text-zinc-300 max-w-2xl mx-auto font-normal leading-relaxed px-2">
+            Students upload their previous exam papers, our admin checks and approves them, and you earn credits. Once you reach 499 credits, you can cash them out for real money! Plus, get 10 free credits just for signing in.
           </p>
         </div>
 
@@ -61,7 +64,7 @@ export default function HeroSection() {
             <div className="flex items-center gap-2.5 sm:gap-3 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors truncate">
               <Search className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 flex-shrink-0" />
               <span className="text-xs sm:text-sm font-medium text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200 truncate">
-                Search course code, subject, or year...
+                Search course name, code, or year...
               </span>
             </div>
             <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -78,7 +81,7 @@ export default function HeroSection() {
             href="/browse"
             className="btn-pill-black text-xs sm:text-sm px-5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-center gap-2 w-full sm:w-auto"
           >
-            <span>Start Guided Browse</span>
+            <span>Browse Papers</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
 
@@ -87,18 +90,18 @@ export default function HeroSection() {
             className="btn-pill-white text-xs sm:text-sm px-5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-center gap-2 w-full sm:w-auto"
           >
             <UploadCloud className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
-            <span>Upload a Paper</span>
+            <span>Upload & Earn Credits</span>
           </Link>
 
           <Link
             href="/requests"
             className="btn-pill-white text-xs sm:text-sm px-5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-center gap-2 w-full sm:w-auto"
           >
-            <span>Request Missing Paper</span>
+            <span>Ask for a Paper</span>
           </Link>
         </div>
 
-        {/* Floating Glass-style Stats Card — real numbers from backend */}
+        {/* Floating Glass-style Stats Card */}
         <div className="pt-4 sm:pt-6">
           <div className="inline-grid grid-cols-3 sm:flex sm:flex-wrap items-center justify-center gap-3 sm:gap-12 px-4 sm:px-10 py-3 sm:py-4 rounded-[24px] sm:rounded-[28px] glass-card shadow-sm border border-zinc-200/80 dark:border-zinc-800 max-w-full">
             <div className="text-center sm:text-left">
@@ -108,12 +111,12 @@ export default function HeroSection() {
             <div className="w-px h-8 bg-zinc-200 dark:bg-zinc-800 hidden sm:block" />
             <div className="text-center sm:text-left">
               <p className="font-cal text-lg sm:text-2xl font-bold text-zinc-950 dark:text-white">{stats.verifiedPapers}</p>
-              <p className="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium">Verified</p>
+              <p className="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium">Approved Papers</p>
             </div>
             <div className="w-px h-8 bg-zinc-200 dark:bg-zinc-800 hidden sm:block" />
             <div className="text-center sm:text-left">
               <p className="font-cal text-lg sm:text-2xl font-bold text-zinc-950 dark:text-white">100%</p>
-              <p className="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium">Free Access</p>
+              <p className="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium">Free to Use</p>
             </div>
           </div>
         </div>

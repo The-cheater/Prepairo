@@ -43,30 +43,30 @@ export default function StatTiles() {
 
   const tiles = [
     {
-      title: 'Verified Papers',
+      title: 'Approved Papers',
       value: `${stats.verifiedPapers}`,
-      caption: stats.verifiedPapers > 0 ? 'Accurately classified by year and semester' : 'Be the first student to upload a verified exam',
+      caption: stats.verifiedPapers > 0 ? 'Verified by admin and ready for exam practice' : 'Be the first student to upload a past paper',
       icon: FileCheck,
       href: '/browse'
     },
     {
-      title: 'Cataloged Subjects',
+      title: 'Subjects Covered',
       value: `${stats.totalSubjects}`,
-      caption: 'Foundation, Biological, Chemical, Physical & Data Sciences',
+      caption: 'Organized cleanly across all batches and semesters',
       icon: BookOpen,
       href: '/browse'
     },
     {
       title: 'Student Contributors',
       value: `${stats.contributorsCount}`,
-      caption: stats.contributorsCount > 0 ? 'Seniors and alumni giving back' : 'Contribute and earn your first 10 credits',
+      caption: stats.contributorsCount > 0 ? 'Students earning credits and helping friends' : 'Earn 10 credits for every paper you upload',
       icon: Users,
       href: '/contributors'
     },
     {
-      title: 'Open Requests',
+      title: 'Paper Requests',
       value: `${stats.openRequests}`,
-      caption: stats.openRequests > 0 ? 'Papers the community is looking for right now' : 'Need a past exam? Post a community request',
+      caption: stats.openRequests > 0 ? 'Papers students need right now—upload to earn credits' : 'Need a paper? Post a quick request',
       icon: HelpCircle,
       href: '/requests'
     }
@@ -80,14 +80,14 @@ export default function StatTiles() {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div className="space-y-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-              Platform Metrics
+              Community Stats
             </span>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-zinc-950 dark:text-white font-cal">
-              Data. In Motion.
+              Simple numbers, real help.
             </h2>
           </div>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-md font-normal">
-            Real-time repository statistics reflecting community contributions across IISER Thiruvananthapuram batches.
+            Real past exam papers uploaded by students, approved by admins, and available 100% free.
           </p>
         </div>
 
