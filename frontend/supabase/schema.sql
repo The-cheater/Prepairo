@@ -269,8 +269,10 @@ alter publication supabase_realtime add table public.community_notifications;
 
 -- ============================================================
 -- Leaderboard View (top contributors by credits)
+-- with (security_invoker = true) ensures RLS is respected for the querying user
 -- ============================================================
-create or replace view public.leaderboard as
+create or replace view public.leaderboard
+with (security_invoker = true) as
 select
   p.id,
   p.username,
@@ -284,3 +286,4 @@ select
 from public.profiles p
 where p.total_credits > 0 and p.role = 'student'
 order by p.total_credits desc;
+
