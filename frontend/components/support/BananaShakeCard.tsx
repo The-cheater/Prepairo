@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { Heart, Sparkles, RotateCw, CheckCircle2 } from 'lucide-react';
+import { Heart, Sparkles, RotateCw, CheckCircle2, Coffee } from 'lucide-react';
 
 export default function BananaShakeCard() {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -43,8 +43,8 @@ export default function BananaShakeCard() {
       {showThankYou && (
         <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-30 animate-in fade-in zoom-in-95 duration-200 w-max max-w-[90vw] sm:max-w-sm">
           <div className="bg-zinc-950 text-white border border-amber-400/50 shadow-2xl rounded-2xl px-4 sm:px-5 py-2.5 sm:py-3 flex items-center gap-2.5 sm:gap-3">
-            <div className="w-8 h-8 rounded-full bg-amber-400 text-zinc-950 flex items-center justify-center flex-shrink-0 font-bold">
-              🍌
+            <div className="w-8 h-8 rounded-full bg-amber-400 text-zinc-950 flex items-center justify-center flex-shrink-0">
+              <Coffee className="w-4 h-4 text-zinc-950" />
             </div>
             <div className="text-left">
               <p className="text-xs font-bold text-amber-400 flex items-center gap-1">
@@ -110,7 +110,7 @@ export default function BananaShakeCard() {
                 />
               </div>
               <p className="text-[9px] sm:text-[10px] text-zinc-500 dark:text-zinc-400 font-medium text-center">
-                Tap after scan for confetti! 🍌
+                Tap after scan for confetti celebration
               </p>
             </div>
           </div>

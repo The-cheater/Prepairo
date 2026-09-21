@@ -68,16 +68,16 @@ export default function LeaderboardTable({ items, isLoading }: LeaderboardTableP
                   <td className="py-3 sm:py-4 px-2.5 sm:px-6 text-center">
                     <div className="flex items-center justify-center">
                       {item.rank === 1 ? (
-                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 text-zinc-950 flex items-center justify-center font-bold text-xs shadow-xs">
-                          🥇
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-400 text-zinc-950 flex items-center justify-center shadow-xs">
+                          <Trophy className="w-4 h-4 text-zinc-950" />
                         </div>
                       ) : item.rank === 2 ? (
-                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-zinc-200 text-zinc-800 flex items-center justify-center font-bold text-xs shadow-xs">
-                          🥈
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 flex items-center justify-center shadow-xs">
+                          <Medal className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
                         </div>
                       ) : item.rank === 3 ? (
-                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-700/20 text-amber-900 flex items-center justify-center font-bold text-xs shadow-xs">
-                          🥉
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-700/20 text-amber-800 dark:text-amber-300 flex items-center justify-center shadow-xs">
+                          <Medal className="w-4 h-4 text-amber-800 dark:text-amber-300" />
                         </div>
                       ) : (
                         <span className="font-mono text-xs font-bold text-zinc-400">

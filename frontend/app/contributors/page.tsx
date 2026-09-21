@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Award, ShieldCheck, Heart, Users, Sparkles, CheckCircle2, GraduationCap, ArrowRight } from 'lucide-react';
+import { Award, ShieldCheck, Heart, Users, Sparkles, CheckCircle2, GraduationCap, ArrowRight, Coffee } from 'lucide-react';
 import Link from 'next/link';
 import BananaShakeCard from '@/frontend/components/support/BananaShakeCard';
 import { getApiUrl } from '@/frontend/lib/api';
@@ -193,8 +193,9 @@ export default function ContributorsPage() {
           {/* Compact Polite Text */}
           <div className="space-y-3 text-center md:text-left flex-1">
             <div>
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-200/60 dark:border-amber-800/60">
-                🍌 Support the Project
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-200/60 dark:border-amber-800/60">
+                <Coffee className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                <span>Support the Project</span>
               </span>
               <h3 className="font-cal text-lg sm:text-xl font-bold tracking-tight text-zinc-950 dark:text-white mt-2">
                 Buy Me a Banana Shake

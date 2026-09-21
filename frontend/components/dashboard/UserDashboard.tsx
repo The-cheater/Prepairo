@@ -22,7 +22,8 @@ import {
   Check,
   CreditCard,
   ArrowRight,
-  ShieldAlert
+  ShieldAlert,
+  Lightbulb
 } from 'lucide-react';
 import Link from 'next/link';
 import { getApiUrl } from '@/frontend/lib/api';
@@ -590,8 +591,9 @@ export default function UserDashboard() {
                       <p className="text-rose-800 pl-5 leading-relaxed">
                         &ldquo;{paper.adminComment || paper.rejectionReason || 'Document is illegible, corrupted, or does not match examination metadata.'}&rdquo;
                       </p>
-                      <p className="text-[11px] text-rose-600 pl-5 pt-1">
-                        💡 <strong>Next steps:</strong> You can re-upload this paper with clearer pages or updated exam details to earn your 10 credits!
+                      <p className="text-[11px] text-rose-600 pl-5 pt-1 flex items-center gap-1">
+                        <Lightbulb className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                        <span><strong>Next steps:</strong> You can re-upload this paper with clearer pages or updated exam details to earn your 10 credits!</span>
                       </p>
                     </div>
                   )}

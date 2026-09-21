@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { Coffee, Heart } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -45,8 +46,9 @@ export default function Footer() {
             <Link href="/contributors" className="hover:text-black dark:hover:text-white transition-colors">
               Contributors
             </Link>
-            <Link href="/support" className="hover:text-black dark:hover:text-white transition-colors text-amber-600 dark:text-amber-400">
-              Buy a Shake 🍌
+            <Link href="/support" className="hover:text-black dark:hover:text-white transition-colors text-amber-600 dark:text-amber-400 inline-flex items-center gap-1">
+              <Coffee className="w-3.5 h-3.5" />
+              <span>Support</span>
             </Link>
           </nav>
 
@@ -54,7 +56,11 @@ export default function Footer() {
 
         {/* Bottom micro copyright */}
         <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between text-[11px] text-zinc-400 dark:text-zinc-500 gap-2 text-center sm:text-left">
-          <p>© {new Date().getFullYear()} Prepairo. Built with ❤️ for students.</p>
+          <p className="flex items-center gap-1 justify-center sm:justify-start">
+            <span>© {new Date().getFullYear()} Prepairo. Built with</span>
+            <Heart className="w-3 h-3 text-rose-500 fill-rose-500 inline" />
+            <span>for students.</span>
+          </p>
           <p>Verified exam papers & community doubts hub</p>
         </div>
       </div>

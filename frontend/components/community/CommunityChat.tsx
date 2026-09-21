@@ -53,10 +53,10 @@ export const CHANNELS = [
 
 export const DOUBT_TAGS = [
   { id: 'all', label: 'All Messages' },
-  { id: '🔥 High Chance', label: '🔥 High Chance Questions', short: '🔥 High Chance' },
-  { id: '⭐ Important Topic', label: '⭐ Important Topics', short: '⭐ Important Topic' },
-  { id: '❓ PYQ Doubt', label: '❓ Past Paper Doubt', short: '❓ PYQ Doubt' },
-  { id: '💡 Senior Advice', label: '💡 Ask a Senior', short: '💡 Senior Advice' },
+  { id: 'High Chance', label: 'High Chance Questions', short: 'High Chance', icon: Flame },
+  { id: 'Important Topic', label: 'Important Topics', short: 'Important Topic', icon: Star },
+  { id: 'PYQ Doubt', label: 'Past Paper Doubt', short: 'PYQ Doubt', icon: HelpCircle },
+  { id: 'Senior Advice', label: 'Ask a Senior', short: 'Senior Advice', icon: Lightbulb },
 ];
 
 export default function CommunityChat() {
@@ -70,7 +70,7 @@ export default function CommunityChat() {
 
   const [messages, setMessages] = useState<CommunityMessage[]>([]);
   const [inputText, setInputText] = useState('');
-  const [composerTag, setComposerTag] = useState('🔥 High Chance');
+  const [composerTag, setComposerTag] = useState('High Chance');
   const [isSending, setIsSending] = useState(false);
   const [likedMessageIds, setLikedMessageIds] = useState<Record<string, boolean>>({});
 
@@ -175,7 +175,10 @@ export default function CommunityChat() {
   // Filter messages by tag
   const filteredMessages = messages.filter(m => {
     if (selectedTag === 'all') return true;
-    return m.tag === selectedTag;
+    if (!m.tag) return false;
+    const normMsgTag = m.tag.replace(/[^\w\s-]/g, '').trim().toLowerCase();
+    const normSelected = selectedTag.replace(/[^\w\s-]/g, '').trim().toLowerCase();
+    return normMsgTag.includes(normSelected) || normSelected.includes(normMsgTag);
   });
 
   // Render text with highlighted @mentions
@@ -276,7 +279,7 @@ export default function CommunityChat() {
             <span>Ask Seniors What&apos;s Important</span>
           </div>
           <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
-            Tag questions with <strong className="text-zinc-900 dark:text-white">🔥 High Chance</strong> or <strong className="text-zinc-900 dark:text-white">⭐ Important Topic</strong> so seniors can guide you on key exam topics!
+            Tag questions with <strong className="text-zinc-900 dark:text-white inline-flex items-center gap-1"><Flame className="w-3 h-3 text-amber-500" /> High Chance</strong> or <strong className="text-zinc-900 dark:text-white inline-flex items-center gap-1"><Star className="w-3 h-3 text-blue-500" /> Important Topic</strong> so seniors can guide you on key exam topics!
           </p>
         </div>
 
@@ -303,19 +306,23 @@ export default function CommunityChat() {
 
           {/* Doubt Filter Tag Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-            {DOUBT_TAGS.map(t => (
-              <button
-                key={t.id}
-                onClick={() => setSelectedTag(t.id)}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                  selectedTag === t.id
-                    ? 'bg-black dark:bg-white text-white dark:text-black shadow-2xs'
-                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
-                }`}
-              >
-                {t.short || t.label}
-              </button>
-            ))}
+            {DOUBT_TAGS.map(t => {
+              const TagIcon = 'icon' in t ? t.icon : null;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setSelectedTag(t.id)}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                    selectedTag === t.id
+                      ? 'bg-black dark:bg-white text-white dark:text-black shadow-2xs'
+                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  {TagIcon && <TagIcon className="w-3 h-3" />}
+                  <span>{t.short || t.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -372,11 +379,21 @@ export default function CommunityChat() {
                     </div>
 
                     {/* Doubt Tag Badge */}
-                    {msg.tag && (
-                      <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 shadow-2xs">
-                        {msg.tag}
-                      </span>
-                    )}
+                    {msg.tag && (() => {
+                      const tagMeta = DOUBT_TAGS.find(t => 
+                        t.id.toLowerCase() === msg.tag?.toLowerCase() || 
+                        t.label.toLowerCase() === msg.tag?.toLowerCase() ||
+                        (t.short && msg.tag?.toLowerCase().includes(t.short.toLowerCase()))
+                      );
+                      const TagIcon = tagMeta && 'icon' in tagMeta ? tagMeta.icon : null;
+                      const cleanLabel = tagMeta?.short || msg.tag.replace(/[^\w\s-]/g, '').trim();
+                      return (
+                        <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 shadow-2xs inline-flex items-center gap-1">
+                          {TagIcon && <TagIcon className="w-3 h-3 text-blue-600 dark:text-blue-400" />}
+                          <span>{cleanLabel}</span>
+                        </span>
+                      );
+                    })()}
                   </div>
 
                   {/* Message Content */}
@@ -433,20 +450,24 @@ export default function CommunityChat() {
                 <span className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 flex-shrink-0">
                   Tag:
                 </span>
-                {DOUBT_TAGS.slice(1).map(t => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setComposerTag(t.id)}
-                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                      composerTag === t.id
-                        ? 'bg-blue-600 text-white shadow-2xs'
-                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
-                    }`}
-                  >
-                    {t.short || t.label}
-                  </button>
-                ))}
+                {DOUBT_TAGS.slice(1).map(t => {
+                  const TagIcon = 'icon' in t ? t.icon : null;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setComposerTag(t.id)}
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap transition-all cursor-pointer inline-flex items-center gap-1 ${
+                        composerTag === t.id
+                          ? 'bg-blue-600 text-white shadow-2xs'
+                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+                      }`}
+                    >
+                      {TagIcon && <TagIcon className="w-3 h-3" />}
+                      <span>{t.short || t.label}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Text Input Row */}
