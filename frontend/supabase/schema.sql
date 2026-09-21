@@ -1,5 +1,5 @@
 -- Prepairo Database Schema
--- Supabase Postgres with RLS, Auth, and Storage
+-- Supabase Postgres with RLS, Auth, Realtime, and Storage
 
 -- ============================================================
 -- 1. Extended Profiles (linked to auth.users)
@@ -26,13 +26,17 @@ create table if not exists public.profiles (
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, email, full_name, username)
+  insert into public.profiles (id, email, full_name, username, avatar_url)
   values (
     new.id,
     new.email,
-    coalesce(new.raw_user_meta_data->>'full_name', ''),
-    coalesce(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1))
-  );
+    coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name', ''),
+    coalesce(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1)),
+    coalesce(new.raw_user_meta_data->>'avatar_url', new.raw_user_meta_data->>'picture', '')
+  )
+  on conflict (id) do update set
+    avatar_url = coalesce(excluded.avatar_url, public.profiles.avatar_url),
+    full_name = coalesce(excluded.full_name, public.profiles.full_name);
   return new;
 end;
 $$ language plpgsql security definer;
@@ -43,7 +47,7 @@ create trigger on_auth_user_created
   for each row execute function public.handle_new_user();
 
 -- ============================================================
--- 2. Papers
+-- 2. Papers (mid-sem & end-sem only)
 -- ============================================================
 create table if not exists public.papers (
   id uuid primary key default gen_random_uuid(),
@@ -54,7 +58,7 @@ create table if not exists public.papers (
   academic_year integer not null,
   semester integer not null,
   exam_year integer not null,
-  exam_type text not null check (exam_type in ('mid-sem', 'end-sem', 'quiz', 'supplementary')),
+  exam_type text not null check (exam_type in ('mid-sem', 'end-sem')),
   batch text,
   file_url text not null,
   file_name text,
@@ -107,7 +111,7 @@ create table if not exists public.paper_requests (
   academic_year integer,
   semester integer,
   exam_year integer not null,
-  exam_type text not null,
+  exam_type text not null check (exam_type in ('mid-sem', 'end-sem')),
   notes text,
   requester_name text default 'Student',
   requester_id uuid references public.profiles(id) on delete set null,
@@ -133,6 +137,39 @@ create table if not exists public.subject_suggestions (
 );
 
 -- ============================================================
+-- 7. Community Discussion Messages
+-- ============================================================
+create table if not exists public.community_messages (
+  id text primary key,
+  channel_id text not null,
+  content text not null,
+  author_name text not null,
+  author_username text not null,
+  author_avatar text,
+  author_batch text,
+  tag text default 'General',
+  tagged_usernames text[] default '{}',
+  likes integer default 0,
+  created_at timestamptz default now()
+);
+
+-- ============================================================
+-- 8. Community Notifications
+-- ============================================================
+create table if not exists public.community_notifications (
+  id text primary key,
+  recipient_username text not null,
+  sender_username text not null,
+  sender_name text not null,
+  sender_avatar text,
+  channel_id text not null,
+  message_snippet text not null,
+  type text not null default 'mention',
+  is_read boolean default false,
+  created_at timestamptz default now()
+);
+
+-- ============================================================
 -- Indexes
 -- ============================================================
 create index if not exists idx_papers_subject on public.papers (subject_name);
@@ -141,9 +178,11 @@ create index if not exists idx_papers_uploader on public.papers (uploader_id);
 create index if not exists idx_credits_user on public.credits (user_id);
 create index if not exists idx_profiles_username on public.profiles (username);
 create index if not exists idx_profiles_credits on public.profiles (total_credits desc);
+create index if not exists idx_comm_channel on public.community_messages (channel_id, created_at desc);
+create index if not exists idx_notif_recipient on public.community_notifications (recipient_username, is_read);
 
 -- ============================================================
--- Row Level Security
+-- Row Level Security (RLS)
 -- ============================================================
 alter table public.profiles enable row level security;
 alter table public.papers enable row level security;
@@ -151,71 +190,82 @@ alter table public.credits enable row level security;
 alter table public.redeem_requests enable row level security;
 alter table public.paper_requests enable row level security;
 alter table public.subject_suggestions enable row level security;
+alter table public.community_messages enable row level security;
+alter table public.community_notifications enable row level security;
 
 -- Profiles: public read, self update
 drop policy if exists "Public can view profiles" on public.profiles;
-create policy "Public can view profiles" on public.profiles
-  for select using (true);
+create policy "Public can view profiles" on public.profiles for select using (true);
 
 drop policy if exists "Users can update own profile" on public.profiles;
-create policy "Users can update own profile" on public.profiles
-  for update using (auth.uid() = id);
+create policy "Users can update own profile" on public.profiles for update using (auth.uid() = id);
 
--- Papers: public read verified, authenticated insert, admin update
+-- Papers: public read verified, authenticated insert
 drop policy if exists "Public can view verified papers" on public.papers;
-create policy "Public can view verified papers" on public.papers
-  for select using (status = 'verified' or uploader_id = auth.uid());
+create policy "Public can view verified papers" on public.papers for select using (status = 'verified' or uploader_id = auth.uid());
 
 drop policy if exists "Authenticated users can upload papers" on public.papers;
-create policy "Authenticated users can upload papers" on public.papers
-  for insert with check (auth.uid() is not null);
+create policy "Authenticated users can upload papers" on public.papers for insert with check (auth.uid() is not null);
 
 drop policy if exists "Admin can update papers" on public.papers;
-create policy "Admin can update papers" on public.papers
-  for update using (
-    exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
-    or uploader_id = auth.uid()
-  );
+create policy "Admin can update papers" on public.papers for update using (
+  exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+  or uploader_id = auth.uid()
+);
 
 -- Credits: user can read own
 drop policy if exists "Users can view own credits" on public.credits;
-create policy "Users can view own credits" on public.credits
-  for select using (user_id = auth.uid());
+create policy "Users can view own credits" on public.credits for select using (user_id = auth.uid());
 
 drop policy if exists "System can insert credits" on public.credits;
-create policy "System can insert credits" on public.credits
-  for insert with check (true);
+create policy "System can insert credits" on public.credits for insert with check (true);
 
 -- Redeem requests: user can read/insert own
 drop policy if exists "Users can view own redeem requests" on public.redeem_requests;
-create policy "Users can view own redeem requests" on public.redeem_requests
-  for select using (user_id = auth.uid());
+create policy "Users can view own redeem requests" on public.redeem_requests for select using (user_id = auth.uid());
 
 drop policy if exists "Users can submit redeem requests" on public.redeem_requests;
-create policy "Users can submit redeem requests" on public.redeem_requests
-  for insert with check (user_id = auth.uid());
+create policy "Users can submit redeem requests" on public.redeem_requests for insert with check (user_id = auth.uid());
 
--- Paper requests: public read, authenticated insert
+-- Paper requests: public read, anyone can insert
 drop policy if exists "Public can view paper requests" on public.paper_requests;
-create policy "Public can view paper requests" on public.paper_requests
-  for select using (true);
+create policy "Public can view paper requests" on public.paper_requests for select using (true);
 
 drop policy if exists "Anyone can submit paper requests" on public.paper_requests;
-create policy "Anyone can submit paper requests" on public.paper_requests
-  for insert with check (true);
+create policy "Anyone can submit paper requests" on public.paper_requests for insert with check (true);
 
-drop policy if exists "Admin can update paper requests" on public.paper_requests;
-create policy "Admin can update paper requests" on public.paper_requests
-  for update using (true);
-
--- Subject suggestions: public insert
+-- Subject suggestions: public insert & view
 drop policy if exists "Anyone can suggest subjects" on public.subject_suggestions;
-create policy "Anyone can suggest subjects" on public.subject_suggestions
-  for insert with check (true);
+create policy "Anyone can suggest subjects" on public.subject_suggestions for insert with check (true);
 
 drop policy if exists "Public can view suggestions" on public.subject_suggestions;
-create policy "Public can view suggestions" on public.subject_suggestions
-  for select using (true);
+create policy "Public can view suggestions" on public.subject_suggestions for select using (true);
+
+-- Community messages: public read, authenticated insert, public like update
+drop policy if exists "Anyone can view community messages" on public.community_messages;
+create policy "Anyone can view community messages" on public.community_messages for select using (true);
+
+drop policy if exists "Anyone can post community messages" on public.community_messages;
+create policy "Anyone can post community messages" on public.community_messages for insert with check (true);
+
+drop policy if exists "Anyone can like community messages" on public.community_messages;
+create policy "Anyone can like community messages" on public.community_messages for update using (true);
+
+-- Community notifications: user can view & update own notifications
+drop policy if exists "Users can view own notifications" on public.community_notifications;
+create policy "Users can view own notifications" on public.community_notifications for select using (true);
+
+drop policy if exists "System can insert notifications" on public.community_notifications;
+create policy "System can insert notifications" on public.community_notifications for insert with check (true);
+
+drop policy if exists "Users can update own notifications" on public.community_notifications;
+create policy "Users can update own notifications" on public.community_notifications for update using (true);
+
+-- ============================================================
+-- Enable Supabase Realtime (for live chat & notifications)
+-- ============================================================
+alter publication supabase_realtime add table public.community_messages;
+alter publication supabase_realtime add table public.community_notifications;
 
 -- ============================================================
 -- Leaderboard View (top contributors by credits)
