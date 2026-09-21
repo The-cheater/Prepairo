@@ -23,11 +23,9 @@ export default function PaperGrid({ papers, showGrouping = true }: PaperGridProp
   const years = Array.from(new Set(filtered.map(p => p.examYear))).sort((a, b) => b - a);
 
   const examTypes = [
-    { value: 'all', label: 'All Exam Types' },
+    { value: 'all', label: 'All Exams' },
     { value: 'end-sem', label: 'End-Sem' },
-    { value: 'mid-sem', label: 'Mid-Sem' },
-    { value: 'quiz', label: 'Quizzes' },
-    { value: 'supplementary', label: 'Supplementary' }
+    { value: 'mid-sem', label: 'Mid-Sem' }
   ];
 
   if (papers.length === 0) {

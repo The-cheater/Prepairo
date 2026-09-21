@@ -15,7 +15,7 @@ export default function NewRequestModal({ isOpen, onClose }: NewRequestModalProp
   const [academicYear, setAcademicYear] = useState(2);
   const [semester, setSemester] = useState(3);
   const [examYear, setExamYear] = useState(2023);
-  const [examType, setExamType] = useState<'mid-sem' | 'end-sem' | 'quiz' | 'supplementary'>('end-sem');
+  const [examType, setExamType] = useState<'mid-sem' | 'end-sem'>('end-sem');
   const [notes, setNotes] = useState('');
   const [requesterName, setRequesterName] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -164,8 +164,6 @@ export default function NewRequestModal({ isOpen, onClose }: NewRequestModalProp
                 >
                   <option value="end-sem">End-Semester</option>
                   <option value="mid-sem">Mid-Semester</option>
-                  <option value="quiz">Quiz</option>
-                  <option value="supplementary">Supplementary</option>
                 </select>
               </div>
             </div>

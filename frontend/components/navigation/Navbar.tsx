@@ -6,7 +6,8 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/frontend/components/auth/AuthProvider';
 import CreditBadge from '@/frontend/components/gamification/CreditBadge';
 import ThemeToggle from '@/frontend/components/theme/ThemeToggle';
-import { LogOut, User as UserIcon, Trophy, Sparkles, Menu, X, ArrowRight, ShieldCheck, Settings } from 'lucide-react';
+import NotificationBell from '@/frontend/components/notifications/NotificationBell';
+import { LogOut, User as UserIcon, Trophy, Sparkles, Menu, X, ArrowRight, ShieldCheck, Settings, MessageSquare } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -17,6 +18,7 @@ export default function Navbar() {
     { label: 'Home', href: '/' },
     { label: 'Browse', href: '/browse' },
     { label: 'Upload', href: '/upload' },
+    { label: 'Community', href: '/community' },
     { label: 'Requests', href: '/requests' },
     { label: 'Leaderboard', href: '/leaderboard' },
     { label: 'Contributors', href: '/contributors' },
@@ -26,7 +28,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 w-full bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md border-b border-zinc-100 dark:border-zinc-800 transition-colors">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
         
-        {/* Brand: Prepairo (IISER TVM badge removed per request) */}
+        {/* Brand: Prepairo */}
         <div className="flex items-center gap-2 sm:gap-3">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-zinc-950 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105">
@@ -55,7 +57,7 @@ export default function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`px-4 py-2 rounded-full text-xs font-semibold transition-all ${
+                className={`px-3.5 py-2 rounded-full text-xs font-semibold transition-all ${
                   isActive
                     ? 'bg-black dark:bg-white text-white dark:text-black shadow-xs'
                     : 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800'
@@ -67,8 +69,11 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* Right Section: Theme Toggle, Auth State & Mobile Menu Button */}
+        {/* Right Section: Notifications, Theme Toggle, Auth State & Mobile Menu Button */}
         <div className="flex items-center gap-1.5 sm:gap-2.5">
+          {/* Notification Bell for Mentions & Doubts */}
+          <NotificationBell />
+
           {/* Theme Toggle (Desktop & Mobile) */}
           <ThemeToggle />
 

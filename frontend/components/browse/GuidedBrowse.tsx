@@ -303,7 +303,7 @@ export default function GuidedBrowse() {
               </h2>
 
               <p className="text-xs sm:text-sm text-zinc-400 max-w-xl font-normal">
-                Browse verified mid-semester, end-semester, quiz, and supplementary previous year question papers.
+                Browse verified mid-semester and end-semester previous year question papers.
               </p>
             </div>
 

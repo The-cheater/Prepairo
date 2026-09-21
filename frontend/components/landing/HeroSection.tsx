@@ -1,13 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, ArrowRight, UploadCloud, Sparkles } from 'lucide-react';
-import Link from 'next/link';
-import CommandSearch from '@/frontend/components/search/CommandSearch';
+import { Sparkles } from 'lucide-react';
 import { getApiUrl } from '@/frontend/lib/api';
 
 export default function HeroSection() {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [stats, setStats] = useState({ totalSubjects: 0, verifiedPapers: 0 });
 
   useEffect(() => {
@@ -24,7 +21,7 @@ export default function HeroSection() {
   }, []);
 
   return (
-    <div className="relative w-full overflow-hidden pt-6 pb-20 sm:pt-10 sm:pb-28">
+    <div className="relative w-full overflow-hidden pt-6 pb-16 sm:pt-12 sm:pb-20">
 
       {/* Main Centered Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8">
@@ -55,54 +52,8 @@ export default function HeroSection() {
           </p>
         </div>
 
-        {/* Global Instant Search Bar Trigger */}
-        <div className="max-w-xl mx-auto px-2 sm:px-0">
-          <div 
-            onClick={() => setIsSearchOpen(true)}
-            className="group flex items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md rounded-full border border-zinc-200 dark:border-zinc-800 shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-zinc-400 dark:hover:border-zinc-600 hover:shadow-[0_12px_36px_rgb(0,0,0,0.1)] transition-all cursor-pointer"
-          >
-            <div className="flex items-center gap-2.5 sm:gap-3 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors truncate">
-              <Search className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 flex-shrink-0" />
-              <span className="text-xs sm:text-sm font-medium text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200 truncate">
-                Search course name, code, or year...
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5 flex-shrink-0">
-              <kbd className="text-[10px] sm:text-[11px] font-mono font-medium px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
-                ⌘K
-              </kbd>
-            </div>
-          </div>
-        </div>
-
-        {/* Centered Pill CTAs */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 pt-2 px-4 sm:px-0 max-w-md sm:max-w-none mx-auto">
-          <Link
-            href="/browse"
-            className="btn-pill-black text-xs sm:text-sm px-5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-center gap-2 w-full sm:w-auto"
-          >
-            <span>Browse Papers</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-
-          <Link
-            href="/upload"
-            className="btn-pill-white text-xs sm:text-sm px-5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-center gap-2 w-full sm:w-auto"
-          >
-            <UploadCloud className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
-            <span>Upload & Earn Credits</span>
-          </Link>
-
-          <Link
-            href="/requests"
-            className="btn-pill-white text-xs sm:text-sm px-5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-center gap-2 w-full sm:w-auto"
-          >
-            <span>Ask for a Paper</span>
-          </Link>
-        </div>
-
         {/* Floating Glass-style Stats Card */}
-        <div className="pt-4 sm:pt-6">
+        <div className="pt-2 sm:pt-4">
           <div className="inline-grid grid-cols-3 sm:flex sm:flex-wrap items-center justify-center gap-3 sm:gap-12 px-4 sm:px-10 py-3 sm:py-4 rounded-[24px] sm:rounded-[28px] glass-card shadow-sm border border-zinc-200/80 dark:border-zinc-800 max-w-full">
             <div className="text-center sm:text-left">
               <p className="font-cal text-lg sm:text-2xl font-bold text-zinc-950 dark:text-white">{stats.totalSubjects}</p>
@@ -122,8 +73,6 @@ export default function HeroSection() {
         </div>
 
       </div>
-
-      <CommandSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </div>
   );
 }

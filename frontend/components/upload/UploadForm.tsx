@@ -19,7 +19,7 @@ export default function UploadForm() {
   const [semester, setSemester] = useState(1);
   const [schoolId, setSchoolId] = useState('foundation');
   const [subjectName, setSubjectName] = useState('Principles of Life I');
-  const [examType, setExamType] = useState<'mid-sem' | 'end-sem' | 'quiz' | 'supplementary'>('end-sem');
+  const [examType, setExamType] = useState<'mid-sem' | 'end-sem'>('end-sem');
   const [examYear, setExamYear] = useState(2024);
   const [courseCode, setCourseCode] = useState('');
   const [batch, setBatch] = useState('');
@@ -349,9 +349,7 @@ export default function UploadForm() {
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { value: 'end-sem', label: 'End-Semester' },
-                  { value: 'mid-sem', label: 'Mid-Semester' },
-                  { value: 'quiz', label: 'Quiz / Test' },
-                  { value: 'supplementary', label: 'Supplementary' }
+                  { value: 'mid-sem', label: 'Mid-Semester' }
                 ].map(item => (
                   <button
                     key={item.value}

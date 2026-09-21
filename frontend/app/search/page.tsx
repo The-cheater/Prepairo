@@ -132,8 +132,6 @@ export default function SearchPage() {
               <option value="all">All Exam Categories</option>
               <option value="end-sem">End-Semester</option>
               <option value="mid-sem">Mid-Semester</option>
-              <option value="quiz">Quiz / Minor</option>
-              <option value="supplementary">Supplementary</option>
             </select>
           </div>
 

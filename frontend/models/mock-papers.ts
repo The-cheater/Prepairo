@@ -7,7 +7,7 @@ export interface PaperRecord {
   academicYear: number;
   semester: number;
   examYear: number;
-  examType: 'mid-sem' | 'end-sem' | 'quiz' | 'supplementary';
+  examType: 'mid-sem' | 'end-sem';
   batch?: string;
   fileUrl: string;
   fileName: string;
@@ -31,7 +31,7 @@ export interface PaperRequest {
   academicYear: number;
   semester: number;
   examYear: number;
-  examType: 'mid-sem' | 'end-sem' | 'quiz' | 'supplementary';
+  examType: 'mid-sem' | 'end-sem';
   notes?: string;
   requesterName: string;
   status: 'open' | 'fulfilled';
