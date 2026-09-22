@@ -12,9 +12,10 @@ interface NewRequestModalProps {
 export default function NewRequestModal({ isOpen, onClose }: NewRequestModalProps) {
   const [subjectName, setSubjectName] = useState('');
   const [courseCode, setCourseCode] = useState('');
+  const CURRENT_YEAR = Math.max(new Date().getFullYear(), 2026);
   const [academicYear, setAcademicYear] = useState(2);
   const [semester, setSemester] = useState(3);
-  const [examYear, setExamYear] = useState(2023);
+  const [examYear, setExamYear] = useState(CURRENT_YEAR);
   const [examType, setExamType] = useState<'mid-sem' | 'end-sem'>('end-sem');
   const [notes, setNotes] = useState('');
   const [requesterName, setRequesterName] = useState('');
@@ -130,7 +131,7 @@ export default function NewRequestModal({ isOpen, onClose }: NewRequestModalProp
                   onChange={e => setExamYear(Number(e.target.value))}
                   className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900 transition-colors"
                 >
-                  {[2024, 2023, 2022, 2021, 2020, 2019].map(y => (
+                  {Array.from({ length: CURRENT_YEAR - 2017 }, (_, i) => CURRENT_YEAR - i).map(y => (
                     <option key={y} value={y}>{y}</option>
                   ))}
                 </select>

@@ -11,6 +11,8 @@ import { getApiUrl } from '@/frontend/lib/api';
 
 const MAX_FILE_SIZE_MB = 2;
 const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
+const CURRENT_YEAR = Math.max(new Date().getFullYear(), 2026);
+const EXAM_YEARS = Array.from({ length: CURRENT_YEAR - 2015 }, (_, i) => CURRENT_YEAR - i);
 
 export default function UploadForm() {
   const { user, profile } = useAuth();
@@ -20,8 +22,7 @@ export default function UploadForm() {
   const [schoolId, setSchoolId] = useState('foundation');
   const [subjectName, setSubjectName] = useState('Principles of Life I');
   const [examType, setExamType] = useState<'mid-sem' | 'end-sem'>('end-sem');
-  const [examYear, setExamYear] = useState(2024);
-  const [courseCode, setCourseCode] = useState('');
+  const [examYear, setExamYear] = useState(CURRENT_YEAR);
   const [batch, setBatch] = useState('');
   const [uploaderName, setUploaderName] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -49,8 +50,6 @@ export default function UploadForm() {
 
   const handleSubjectChange = (name: string) => {
     setSubjectName(name);
-    const found = ALL_SUBJECTS.find(s => s.name === name);
-    if (found?.code) setCourseCode(found.code);
   };
 
   const handleFileDrop = (e: React.DragEvent) => {
@@ -107,7 +106,6 @@ export default function UploadForm() {
       formData.append('program', program);
       formData.append('academicYear', academicYear.toString());
       formData.append('semester', semester.toString());
-      if (courseCode.trim()) formData.append('courseCode', courseCode.trim());
       if (batch.trim()) formData.append('batch', batch.trim());
       formData.append('uploaderName', isAnonymous ? 'Anonymous' : (uploaderName.trim() || 'Student Contributor'));
       if (!isAnonymous && profile?.id) {
@@ -297,7 +295,6 @@ export default function UploadForm() {
                   const first = ALL_SUBJECTS.find(s => s.schoolId === e.target.value);
                   if (first) {
                     setSubjectName(first.name);
-                    if (first.code) setCourseCode(first.code);
                   }
                 }}
                 className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-2xl text-xs sm:text-sm font-medium text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-950 transition-colors"
@@ -341,10 +338,10 @@ export default function UploadForm() {
             2. Examination Details
           </h3>
 
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             
             {/* Exam Type */}
-            <div className="space-y-1.5 sm:col-span-2">
+            <div className="space-y-1.5">
               <label className="text-xs font-semibold text-zinc-700">Exam Type *</label>
               <div className="grid grid-cols-2 gap-2">
                 {[
@@ -355,7 +352,7 @@ export default function UploadForm() {
                     key={item.value}
                     type="button"
                     onClick={() => setExamType(item.value as any)}
-                    className={`py-2 px-2 text-[11px] sm:text-xs font-semibold rounded-xl border transition-all cursor-pointer text-center truncate ${
+                    className={`py-2.5 px-3 text-[11px] sm:text-xs font-semibold rounded-xl border transition-all cursor-pointer text-center truncate ${
                       examType === item.value
                         ? 'bg-black text-white border-black shadow-sm'
                         : 'bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100'
@@ -375,22 +372,10 @@ export default function UploadForm() {
                 onChange={e => setExamYear(Number(e.target.value))}
                 className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-2xl text-xs sm:text-sm font-medium text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-950 transition-colors"
               >
-                {[2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016].map(yr => (
+                {EXAM_YEARS.map(yr => (
                   <option key={yr} value={yr}>{yr}</option>
                 ))}
               </select>
-            </div>
-
-            {/* Course Code (Optional) */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-700">Course Code</label>
-              <input
-                type="text"
-                value={courseCode}
-                onChange={e => setCourseCode(e.target.value)}
-                placeholder="e.g. PHY111"
-                className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-2xl text-xs sm:text-sm font-mono font-medium text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-950 transition-colors uppercase"
-              />
             </div>
           </div>
 
