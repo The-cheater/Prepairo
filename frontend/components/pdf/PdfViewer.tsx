@@ -14,8 +14,59 @@ export default function PdfViewer({ paper, onDownload }: PdfViewerProps) {
   const [zoom, setZoom] = useState(100);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [isLoadingPdf, setIsLoadingPdf] = useState(false);
 
   const hasValidPdfUrl = paper.fileUrl && (paper.fileUrl.startsWith('http') || paper.fileUrl.startsWith('blob:') || paper.fileUrl.endsWith('.pdf'));
+
+  // Load PDF via proxy as same-origin Blob to guarantee inline rendering without white screen
+  React.useEffect(() => {
+    let isMounted = true;
+    if (!hasValidPdfUrl) return;
+
+    let createdUrl: string | null = null;
+
+    async function loadPdfBlob() {
+      setIsLoadingPdf(true);
+      setLoadError(false);
+      try {
+        const streamUrl = paper.fileUrl.startsWith('http')
+          ? `/api/papers/proxy?url=${encodeURIComponent(paper.fileUrl)}&filename=${encodeURIComponent(paper.fileName || `${paper.subjectName}.pdf`)}`
+          : paper.fileUrl;
+
+        const res = await fetch(streamUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const rawBlob = await res.blob();
+        const pdfBlob = new Blob([rawBlob], { type: 'application/pdf' });
+        createdUrl = URL.createObjectURL(pdfBlob);
+        if (isMounted) {
+          setBlobUrl(createdUrl);
+        }
+      } catch (err) {
+        console.warn('Blob PDF fetch fallback:', err);
+        // Fall back directly to proxy stream URL if client-side blob fails
+        if (isMounted) {
+          const streamFallback = paper.fileUrl.startsWith('http')
+            ? `/api/papers/proxy?url=${encodeURIComponent(paper.fileUrl)}&filename=${encodeURIComponent(paper.fileName || `${paper.subjectName}.pdf`)}`
+            : paper.fileUrl;
+          setBlobUrl(streamFallback);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingPdf(false);
+        }
+      }
+    }
+
+    loadPdfBlob();
+
+    return () => {
+      isMounted = false;
+      if (createdUrl) {
+        URL.revokeObjectURL(createdUrl);
+      }
+    };
+  }, [paper.fileUrl, hasValidPdfUrl, paper.fileName, paper.subjectName]);
 
   const handleDownload = () => {
     if (onDownload) {
@@ -23,8 +74,14 @@ export default function PdfViewer({ paper, onDownload }: PdfViewerProps) {
       return;
     }
 
-    if (hasValidPdfUrl && !paper.fileUrl.includes('cloudinary.com/kskx0jpz/raw/upload/v1/iiser_tvm_pyq/')) {
-      // Trigger direct download of file
+    if (blobUrl) {
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = paper.fileName || `${paper.subjectName}_${paper.examType}_${paper.examYear}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else if (hasValidPdfUrl) {
       const a = document.createElement('a');
       a.href = paper.fileUrl;
       a.download = paper.fileName || `${paper.subjectName}_${paper.examType}_${paper.examYear}.pdf`;
@@ -33,7 +90,6 @@ export default function PdfViewer({ paper, onDownload }: PdfViewerProps) {
       a.click();
       document.body.removeChild(a);
     } else {
-      // Create downloadable text/pdf representation
       const element = document.createElement('a');
       const file = new Blob([
         `%PDF-1.4\n% Prepairo - IISER Thiruvananthapuram\nSubject: ${paper.subjectName}\nCourse Code: ${paper.courseCode || 'N/A'}\nExam: ${formatExamType(paper.examType)} (${paper.examYear})\nSemester: ${paper.semester}\nUploaded by: ${paper.uploaderName}\nVerified: ${paper.status === 'verified' ? 'YES' : 'PENDING'}\n\n[Prepairo Academic Repository - Document Archived]`
@@ -104,21 +160,26 @@ export default function PdfViewer({ paper, onDownload }: PdfViewerProps) {
 
       {/* Viewer Main Viewport */}
       <div className="flex-1 bg-zinc-900/90 overflow-auto p-2 sm:p-4 flex items-center justify-center relative">
-        {hasValidPdfUrl && !loadError ? (
+        {isLoadingPdf ? (
+          <div className="flex flex-col items-center justify-center space-y-3 py-16 text-zinc-400">
+            <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs font-mono">Loading PDF document...</p>
+          </div>
+        ) : hasValidPdfUrl && blobUrl && !loadError ? (
           <div 
             className="w-full h-full flex items-center justify-center transition-transform duration-150"
             style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
           >
             <object
-              data={`${paper.fileUrl}#toolbar=0&navpanes=0&scrollbar=1`}
+              data={`${blobUrl}#toolbar=1&navpanes=0&scrollbar=1`}
               type="application/pdf"
               className="w-full h-full min-h-[350px] sm:min-h-[520px] rounded-lg shadow-xl bg-white"
               onError={() => setLoadError(true)}
             >
               {/* Fallback iframe */}
               <iframe
-                src={`${paper.fileUrl}#toolbar=0`}
-                className="w-full h-full min-h-[350px] sm:min-h-[520px] rounded-lg shadow-xl bg-white"
+                src={`${blobUrl}#toolbar=1`}
+                className="w-full h-full min-h-[350px] sm:min-h-[520px] rounded-lg shadow-xl bg-white border-0"
                 onError={() => setLoadError(true)}
                 title={paper.subjectName}
               />

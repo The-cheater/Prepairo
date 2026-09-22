@@ -69,83 +69,50 @@ export default function SupportPage() {
         </div>
       </div>
 
-      {/* Voluntary Contribution Tiers (Coffee Style) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        
-        {/* Tier 1 */}
-        <div className="bg-white rounded-[28px] border border-zinc-200 p-6 shadow-sm flex flex-col justify-between hover-lift transition-all">
-          <div className="space-y-3">
-            <div className="w-10 h-10 rounded-2xl bg-zinc-100 flex items-center justify-center text-zinc-800">
-              <Coffee className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-cal text-lg font-bold text-zinc-950">Chai / Coffee</h3>
-              <p className="font-cal text-2xl font-bold text-zinc-900 mt-1">₹50 / $1</p>
-            </div>
-            <p className="text-xs text-zinc-500 leading-relaxed font-normal">
-              Covers 1,000 document download bandwidth requests.
-            </p>
-          </div>
-
-          <button
-            onClick={() => alert('Thank you! Voluntary contribution gateway can be configured with your preferred UPI or Stripe link in .env.')}
-            className="btn-pill-white text-xs w-full mt-6 py-2"
-          >
-            Buy a Chai
-          </button>
+      {/* How Students Can Support Without Money */}
+      <div className="bg-white rounded-[32px] border border-zinc-200 p-8 shadow-sm space-y-6">
+        <div className="space-y-1">
+          <h2 className="font-cal text-xl font-bold text-zinc-950">
+            How You Can Support Prepairo
+          </h2>
+          <p className="text-xs text-zinc-500 font-normal">
+            Prepairo does not solicit money or donations from students. The best ways to support the community:
+          </p>
         </div>
 
-        {/* Tier 2 (Highlighted) */}
-        <div className="bg-zinc-950 text-white rounded-[28px] p-6 shadow-md flex flex-col justify-between hover-lift transition-all relative overflow-hidden">
-          <div className="space-y-3 relative z-10">
-            <div className="w-10 h-10 rounded-2xl bg-white/10 text-white flex items-center justify-center">
-              <Heart className="w-5 h-5 text-rose-400 fill-rose-400" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
+          <div className="p-6 rounded-2xl bg-zinc-50 border border-zinc-200 flex flex-col justify-between space-y-4">
+            <div className="space-y-2">
+              <h3 className="font-cal text-base font-bold text-zinc-900">Upload Past Exam Papers</h3>
+              <p className="text-xs text-zinc-500 leading-relaxed font-normal">
+                Share question papers from your previous semesters. Every paper you upload is reviewed, verified, and awarded with credits on your contributor dashboard.
+              </p>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-cal text-lg font-bold text-white">Semester Supporter</h3>
-                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-white/20 text-white font-semibold">
-                  Popular
-                </span>
-              </div>
-              <p className="font-cal text-2xl font-bold text-white mt-1">₹250 / $5</p>
-            </div>
-            <p className="text-xs text-zinc-400 leading-relaxed font-normal">
-              Covers cloud database and backup services for an entire academic semester.
-            </p>
+            <Link
+              href="/upload"
+              className="btn-pill-black text-xs py-2.5 px-5 text-center inline-flex items-center justify-center gap-1.5"
+            >
+              <span>Upload Question Paper</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
-          <button
-            onClick={() => alert('Thank you! Voluntary contribution gateway can be configured with your preferred UPI or Stripe link in .env.')}
-            className="rounded-full bg-white text-black text-xs font-semibold w-full mt-6 py-2.5 hover:bg-zinc-100 transition-colors cursor-pointer"
-          >
-            Support for a Semester
-          </button>
-        </div>
-
-        {/* Tier 3 */}
-        <div className="bg-white rounded-[28px] border border-zinc-200 p-6 shadow-sm flex flex-col justify-between hover-lift transition-all">
-          <div className="space-y-3">
-            <div className="w-10 h-10 rounded-2xl bg-zinc-100 flex items-center justify-center text-zinc-800">
-              <Sparkles className="w-5 h-5 text-amber-600" />
+          <div className="p-6 rounded-2xl bg-zinc-50 border border-zinc-200 flex flex-col justify-between space-y-4">
+            <div className="space-y-2">
+              <h3 className="font-cal text-base font-bold text-zinc-900">Fulfill Paper Requests</h3>
+              <p className="text-xs text-zinc-500 leading-relaxed font-normal">
+                Students regularly request exam papers for upcoming mid-sems and end-sems. Check the requests board and upload what your batchmates need.
+              </p>
             </div>
-            <div>
-              <h3 className="font-cal text-lg font-bold text-zinc-950">Alumni Patron</h3>
-              <p className="font-cal text-2xl font-bold text-zinc-900 mt-1">₹1,000 / $15</p>
-            </div>
-            <p className="text-xs text-zinc-500 leading-relaxed font-normal">
-              Sponsors domain, high-availability PDF storage, and archive preservation for a year.
-            </p>
+            <Link
+              href="/requests"
+              className="btn-pill-white text-xs py-2.5 px-5 text-center inline-flex items-center justify-center gap-1.5"
+            >
+              <span>View Open Requests</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
-
-          <button
-            onClick={() => alert('Thank you! Voluntary contribution gateway can be configured with your preferred UPI or Stripe link in .env.')}
-            className="btn-pill-white text-xs w-full mt-6 py-2"
-          >
-            Become a Patron
-          </button>
         </div>
-
       </div>
 
       {/* Return to Browse */}

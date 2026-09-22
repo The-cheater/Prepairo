@@ -83,15 +83,22 @@ app.get('/api/papers', (req: Request, res: Response) => {
 
     let papers = getAllPapers();
 
-    if (uploaderId) {
-      papers = papers.filter((p) => p.uploaderId === uploaderId);
-    } else if (user) {
-      const u = (user as string).toLowerCase();
-      papers = papers.filter(
-        (p) =>
-          p.uploaderId === user ||
-          (p.uploaderName && p.uploaderName.toLowerCase() === u)
-      );
+    if (uploaderId || user) {
+      const uStr = (user as string || '').toLowerCase();
+      const cleanTarget = uStr.replace(/[^a-z0-9]/g, '');
+      papers = papers.filter((p) => {
+        if (uploaderId && p.uploaderId === uploaderId) return true;
+        if (user) {
+          if (p.uploaderId === user) return true;
+          const uName = (p.uploaderName || '').toLowerCase();
+          if (uName === uStr) return true;
+          const cleanUName = uName.replace(/[^a-z0-9]/g, '');
+          if (cleanUName && cleanTarget && (cleanUName.includes(cleanTarget) || cleanTarget.includes(cleanUName))) {
+            return true;
+          }
+        }
+        return false;
+      });
     }
 
     if (status) {

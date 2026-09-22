@@ -1,32 +1,80 @@
+import fs from 'fs';
+import path from 'path';
 import { createSupabaseServer } from '@/backend/supabase/server';
+import { getAllPapers } from '@/backend/db/db';
 
 const CREDITS_PER_PAPER = 10;
 const REDEEM_THRESHOLD = 499;
 
+function getCreditsFile(): string {
+  const cwd = process.cwd();
+  const rootFrontendData = path.join(cwd, 'frontend', 'data');
+  if (fs.existsSync(rootFrontendData)) {
+    return path.join(rootFrontendData, 'credits.json');
+  }
+  const cwdData = path.join(cwd, 'data');
+  if (fs.existsSync(cwdData)) {
+    return path.join(cwdData, 'credits.json');
+  }
+  if (fs.existsSync(path.join(cwd, 'frontend'))) {
+    return path.join(rootFrontendData, 'credits.json');
+  }
+  return path.join(cwdData, 'credits.json');
+}
+
+interface LocalCreditRecord {
+  id: string;
+  userId: string;
+  paperId?: string;
+  amount: number;
+  reason: string;
+  createdAt: string;
+}
+
+function getLocalCredits(): LocalCreditRecord[] {
+  try {
+    const file = getCreditsFile();
+    if (!fs.existsSync(file)) return [];
+    const content = fs.readFileSync(file, 'utf-8');
+    return JSON.parse(content) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalCredit(rec: LocalCreditRecord) {
+  try {
+    const file = getCreditsFile();
+    const dir = path.dirname(file);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    const list = getLocalCredits();
+    list.unshift(rec);
+    fs.writeFileSync(file, JSON.stringify(list, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('Local credits save warning:', err);
+  }
+}
+
 /**
  * Award credits to a user when their paper is approved by admin.
- * Also updates the profile's total_credits and papers_approved counters.
+ * Updates both the persistent local ledger and attempts Supabase counter updates.
  */
 export async function awardCredits(userId: string, paperId: string) {
-  const supabase = await createSupabaseServer();
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(paperId);
 
-  // Check if credits already awarded for this paper
-  if (isUuid) {
-    try {
-      const { data: existing } = await supabase
-        .from('credits')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('paper_id', paperId)
-        .single();
+  // 1. Record in persistent local ledger
+  saveLocalCredit({
+    id: `crd_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    userId,
+    paperId,
+    amount: CREDITS_PER_PAPER,
+    reason: `Paper approved by admin (${paperId})`,
+    createdAt: new Date().toISOString()
+  });
 
-      if (existing) return { alreadyAwarded: true };
-    } catch {}
-  }
-
-  // Insert credit record (gracefully handles non-UUID or external paper IDs)
+  // 2. Also attempt Supabase insert & counter update
   try {
+    const supabase = await createSupabaseServer();
     const insertPayload: Record<string, any> = {
       user_id: userId,
       amount: CREDITS_PER_PAPER,
@@ -35,97 +83,187 @@ export async function awardCredits(userId: string, paperId: string) {
     if (isUuid) {
       insertPayload.paper_id = paperId;
     }
-
-    const { error: creditError } = await supabase.from('credits').insert(insertPayload);
-    if (creditError) {
-      // Retry without paper_id if foreign key failed
-      if (insertPayload.paper_id) {
-        delete insertPayload.paper_id;
-        await supabase.from('credits').insert(insertPayload);
-      }
-    }
+    await supabase.from('credits').insert(insertPayload);
   } catch (err) {
-    console.warn('Credits ledger insert notice:', err);
-  }
-
-  // Update profile counters
-  try {
-    const { error: profileError } = await supabase.rpc('increment_profile_credits', {
-      p_user_id: userId,
-      p_amount: CREDITS_PER_PAPER,
-    });
-
-    // Fallback if RPC doesn't exist — direct update
-    if (profileError) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('total_credits, papers_approved')
-        .eq('id', userId)
-        .single();
-
-      if (profile) {
-        await supabase
-          .from('profiles')
-          .update({
-            total_credits: (profile.total_credits || 0) + CREDITS_PER_PAPER,
-            papers_approved: (profile.papers_approved || 0) + 1,
-          })
-          .eq('id', userId);
-      }
-    }
-  } catch (err) {
-    console.warn('Profile counters update notice:', err);
+    console.warn('Credits ledger Supabase notice:', err);
   }
 
   return { awarded: CREDITS_PER_PAPER };
 }
 
 /**
- * Get a user's credit balance and history.
+ * Get a user's credit balance and history, synthesizing verified papers,
+ * local ledger, and Supabase profile.
  */
-export async function getUserCredits(userId: string) {
-  const supabase = await createSupabaseServer();
+export async function getUserCredits(userId: string, username?: string, fullName?: string) {
+  // 1. Compute verified papers authored by this user
+  const allPapers = getAllPapers();
+  const cleanId = (userId || '').trim().toLowerCase();
+  const cleanUsername = (username || '').trim().toLowerCase();
+  const cleanFullName = (fullName || '').trim().toLowerCase();
+  const cleanAlphaNumericId = cleanId.replace(/[^a-z0-9]/g, '');
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('total_credits, redeemed_credits, papers_approved')
-    .eq('id', userId)
-    .single();
+  const userVerifiedPapers = allPapers.filter(p => {
+    if (p.status !== 'verified') return false;
+    if (p.uploaderId && (p.uploaderId === userId || p.uploaderId.toLowerCase() === cleanId)) return true;
+    if (p.uploaderName) {
+      const uName = p.uploaderName.trim().toLowerCase();
+      if (cleanUsername && (uName === cleanUsername || uName.includes(cleanUsername) || cleanUsername.includes(uName))) return true;
+      if (cleanFullName && (uName === cleanFullName || uName.includes(cleanFullName) || cleanFullName.includes(uName))) return true;
+      const cleanUName = uName.replace(/[^a-z0-9]/g, '');
+      if (cleanAlphaNumericId && cleanUName && (cleanUName === cleanAlphaNumericId || cleanUName.includes(cleanAlphaNumericId) || cleanAlphaNumericId.includes(cleanUName))) return true;
+    }
+    return false;
+  });
 
-  const { data: history } = await supabase
-    .from('credits')
-    .select('id, amount, reason, created_at, paper_id')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(50);
+  const verifiedPapersCount = userVerifiedPapers.length;
+  const paperCredits = verifiedPapersCount * CREDITS_PER_PAPER;
+
+  // 2. Compute local ledger credits
+  const localList = getLocalCredits();
+  const userLedger = localList.filter(c => {
+    if (c.userId === userId || c.userId.toLowerCase() === cleanId) return true;
+    if (cleanUsername && c.userId.toLowerCase().includes(cleanUsername)) return true;
+    return false;
+  });
+  const ledgerCredits = userLedger.reduce((sum, c) => sum + (c.amount || 0), 0);
+
+  // 3. Query Supabase
+  let supabaseTotal = 0;
+  let supabaseApproved = 0;
+  let supabaseRedeemed = 0;
+  let history: any[] = [];
+
+  try {
+    const supabase = await createSupabaseServer();
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('total_credits, redeemed_credits, papers_approved')
+      .eq('id', userId)
+      .single();
+
+    if (profile) {
+      supabaseTotal = profile.total_credits || 0;
+      supabaseApproved = profile.papers_approved || 0;
+      supabaseRedeemed = profile.redeemed_credits || 0;
+    }
+
+    const { data: remoteHistory } = await supabase
+      .from('credits')
+      .select('id, amount, reason, created_at, paper_id')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (remoteHistory && remoteHistory.length > 0) {
+      history = remoteHistory;
+    }
+  } catch {}
+
+  const finalTotal = Math.max(paperCredits, ledgerCredits, supabaseTotal);
+  const finalApproved = Math.max(verifiedPapersCount, supabaseApproved);
+  const finalAvailable = Math.max(0, finalTotal - supabaseRedeemed);
 
   return {
-    totalCredits: profile?.total_credits || 0,
-    redeemedCredits: profile?.redeemed_credits || 0,
-    availableCredits: (profile?.total_credits || 0) - (profile?.redeemed_credits || 0),
-    papersApproved: profile?.papers_approved || 0,
-    canRedeem: ((profile?.total_credits || 0) - (profile?.redeemed_credits || 0)) >= REDEEM_THRESHOLD,
-    history: history || [],
+    totalCredits: finalTotal,
+    redeemedCredits: supabaseRedeemed,
+    availableCredits: finalAvailable,
+    papersApproved: finalApproved,
+    history: history.length > 0 ? history : userLedger.map(l => ({
+      id: l.id,
+      amount: l.amount,
+      reason: l.reason,
+      created_at: l.createdAt,
+      paper_id: l.paperId
+    })),
   };
 }
 
 /**
- * Get public leaderboard data.
+ * Get public live leaderboard data from real contributors.
  */
 export async function getLeaderboard(limit = 25) {
-  const supabase = await createSupabaseServer();
+  // 1. Gather all verified papers from catalog
+  const allPapers = getAllPapers().filter(p => p.status === 'verified');
+  const contributorMap: Record<string, any> = {};
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, username, full_name, department, course, avatar_url, total_credits, papers_approved')
-    .gt('total_credits', 0)
-    .eq('role', 'student')
-    .order('total_credits', { ascending: false })
-    .limit(limit);
+  for (const paper of allPapers) {
+    const idKey = paper.uploaderId || '';
+    const nameKey = (paper.uploaderName || '').trim().toLowerCase();
 
-  if (error) throw error;
+    let existingKey = Object.keys(contributorMap).find(k => {
+      const entry = contributorMap[k];
+      if (idKey && entry.id === idKey) return true;
+      if (nameKey && entry.username.toLowerCase() === nameKey) return true;
+      if (nameKey && entry.full_name.toLowerCase() === nameKey) return true;
+      return false;
+    });
 
-  return (data || []).map((p, idx) => ({
+    const key = existingKey || idKey || paper.uploaderName || `usr_${Math.random().toString(36).substring(2, 6)}`;
+    if (!contributorMap[key]) {
+      contributorMap[key] = {
+        id: paper.uploaderId || `usr_${Math.random().toString(36).substring(2, 6)}`,
+        username: paper.uploaderName || 'Contributor',
+        full_name: paper.uploaderName || 'Student Contributor',
+        department: paper.schoolId === 'data-science' ? 'Data Science' : paper.schoolId === 'physics' ? 'School of Physics' : paper.schoolId || 'IISER TVM',
+        course: paper.program || 'Student',
+        avatar_url: '/logo.png',
+        papers_approved: 0,
+        total_credits: 0,
+      };
+    }
+    contributorMap[key].papers_approved += 1;
+    contributorMap[key].total_credits += CREDITS_PER_PAPER;
+  }
+
+  // 2. Also query Supabase profiles
+  try {
+    const supabase = await createSupabaseServer();
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, username, full_name, department, course, avatar_url, total_credits, papers_approved')
+      .gt('total_credits', 0)
+      .order('total_credits', { ascending: false })
+      .limit(limit);
+
+    if (profiles && profiles.length > 0) {
+      for (const p of profiles) {
+        let matchKey = Object.keys(contributorMap).find(k => {
+          const entry = contributorMap[k];
+          if (p.id && entry.id === p.id) return true;
+          if (p.username && entry.username.toLowerCase() === (p.username || '').toLowerCase()) return true;
+          if (p.full_name && entry.full_name.toLowerCase() === (p.full_name || '').toLowerCase()) return true;
+          return false;
+        });
+
+        const key: string = matchKey || p.id || p.username || `profile_${Math.random()}`;
+        if (!contributorMap[key]) {
+          contributorMap[key] = {
+            id: p.id,
+            username: p.username,
+            full_name: p.full_name || p.username,
+            department: p.department || 'IISER TVM',
+            course: p.course || 'Student',
+            avatar_url: p.avatar_url || '',
+            papers_approved: p.papers_approved || 0,
+            total_credits: p.total_credits || 0,
+          };
+        } else {
+          contributorMap[key].total_credits = Math.max(contributorMap[key].total_credits, p.total_credits || 0);
+          contributorMap[key].papers_approved = Math.max(contributorMap[key].papers_approved, p.papers_approved || 0);
+          if (p.avatar_url) contributorMap[key].avatar_url = p.avatar_url;
+          if (p.full_name) contributorMap[key].full_name = p.full_name;
+          if (p.department) contributorMap[key].department = p.department;
+          if (p.course) contributorMap[key].course = p.course;
+        }
+      }
+    }
+  } catch {}
+
+  const list = Object.values(contributorMap);
+  list.sort((a, b) => b.total_credits - a.total_credits);
+
+  return list.slice(0, limit).map((p, idx) => ({
     rank: idx + 1,
     ...p,
   }));

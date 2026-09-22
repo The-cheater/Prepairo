@@ -21,6 +21,12 @@ export default function GuidedBrowse() {
   const [isLoading, setIsLoading] = useState(false);
   const [isTreeOpenOnMobile, setIsTreeOpenOnMobile] = useState(false);
 
+  // Available academic years based on program
+  const availableYears = useMemo(() => {
+    if (program === 'BS-MS') return [1, 2, 3, 4, 5];
+    return [1, 2]; // M.Sc. (2 years = 4 sem) & Ph.D. (maximum 4 sem coursework)
+  }, [program]);
+
   // Available semesters based on academic year
   const availableSemesters = useMemo(() => {
     return [academicYear * 2 - 1, academicYear * 2];
@@ -31,10 +37,23 @@ export default function GuidedBrowse() {
     setAcademicYear(year);
     const newSem = year * 2 - 1;
     setSemester(newSem);
-    if (year <= 2) {
-      setSelectedSchool('foundation');
-    } else if (selectedSchool === 'foundation') {
-      setSelectedSchool('physics');
+    if (program === 'BS-MS') {
+      if (year <= 2) {
+        setSelectedSchool('foundation');
+      } else if (selectedSchool === 'foundation') {
+        setSelectedSchool('data-science');
+      }
+    }
+  };
+
+  const handleProgramChange = (p: string) => {
+    setProgram(p);
+    if ((p === 'M.Sc.' || p === 'Ph.D.') && academicYear > 2) {
+      setAcademicYear(1);
+      setSemester(1);
+    }
+    if ((p === 'M.Sc.' || p === 'Ph.D.') && selectedSchool === 'foundation') {
+      setSelectedSchool('data-science');
     }
   };
 
@@ -48,13 +67,13 @@ export default function GuidedBrowse() {
     });
   }, [selectedSchool, academicYear]);
 
-  // Prepare items for BranchedMenu
+  // Prepare items for BranchedMenu: show all subjects without truncation
   const branchedMenuItems: BranchedMenuItem[] = useMemo(() => {
     return SCHOOLS.map(school => {
       const schoolSubjects = ALL_SUBJECTS.filter(s => s.schoolId === school.id);
       return {
         label: school.name,
-        children: schoolSubjects.slice(0, 6).map(sub => ({
+        children: schoolSubjects.map(sub => ({
           value: sub.name,
           label: sub.name
         }))
@@ -130,7 +149,7 @@ export default function GuidedBrowse() {
               {['BS-MS', 'M.Sc.', 'Ph.D.'].map(p => (
                 <button
                   key={p}
-                  onClick={() => setProgram(p)}
+                  onClick={() => handleProgramChange(p)}
                   className={`flex-1 py-1.5 sm:py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
                     program === p
                       ? 'bg-white text-zinc-950 shadow-sm border border-zinc-200'
@@ -149,7 +168,7 @@ export default function GuidedBrowse() {
               Academic Year
             </label>
             <div className="flex gap-1 bg-zinc-50 p-1 sm:p-1.5 rounded-2xl border border-zinc-200">
-              {[1, 2, 3, 4, 5].map(yr => (
+              {availableYears.map(yr => (
                 <button
                   key={yr}
                   onClick={() => handleYearChange(yr)}

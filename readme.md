@@ -2,7 +2,9 @@ Architecture Reorganization Completed
 We have restructured the project into clear frontend/ and backend/ folders for readability, and updated all import paths and TypeScript path aliases.
 
 New Project Directory Structure
-e:/pyq/
+
+```
+pyq/
 ├── frontend/                     # All Client-side & UI Code
 │   ├── components/
 │   │   ├── admin/                # Admin Moderation Dashboard
@@ -59,28 +61,5 @@ e:/pyq/
 │       └── upload/
 │
 └── tsconfig.json                 # Configured with @/frontend/* and @/backend/*
-What Was Updated
-Moved Files:
-components/* $\rightarrow$ frontend/components/*
-lib/data/store.ts $\rightarrow$ frontend/store/store.ts
-lib/utils.ts $\rightarrow$ frontend/lib/utils.ts
-lib/shims/* $\rightarrow$ frontend/shims/*
-lib/server/db.ts $\rightarrow$ backend/db/db.ts
-lib/server/credits.ts $\rightarrow$ backend/services/credits.ts
-lib/cloudinary.ts $\rightarrow$ backend/services/cloudinary.ts
-lib/supabase/* $\rightarrow$ backend/supabase/*
-lib/data/mock-papers.ts $\rightarrow$ backend/models/mock-papers.ts
-lib/data/subjects-seed.ts $\rightarrow$ backend/models/subjects-seed.ts
-Updated Import Paths:
-All 11 API routes under app/api/ now cleanly import from @/backend/....
-All pages under app/ now import from @/frontend/components/....
-All internal component and store imports are aligned to @/frontend/... and @/backend/....
-TypeScript Path Aliases:
-Added "@/frontend/*": ["./frontend/*"] and "@/backend/*": ["./backend/*"] in 
 
-tsconfig.json
-.
-Cleaned Up Old Folders:
-Removed the redundant top-level components/ and lib/ directories.
-Build Verification:
-Executed npm run build: compiled with 0 errors across all 24 routes.
+```

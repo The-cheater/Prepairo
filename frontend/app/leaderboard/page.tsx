@@ -40,7 +40,7 @@ export default function LeaderboardPage() {
             Top Student Contributors
           </h1>
           <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
-            Every verified past exam paper earns <strong className="text-white">10 credits</strong>. At <strong className="text-amber-400">499 credits</strong>, unlock real rewards and cash redemption!
+            Every verified past exam paper earns <strong className="text-white">10 credits</strong>. Climb the ranks to become an IISER TVM Hall of Fame top contributor!
           </p>
           <div className="pt-2 flex flex-wrap items-center gap-3">
             <Link
@@ -80,8 +80,8 @@ export default function LeaderboardPage() {
             <Award className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-2xl font-bold font-cal text-zinc-950">499 Credits</p>
-            <p className="text-xs text-zinc-500">Redeem milestone threshold</p>
+            <p className="text-2xl font-bold font-cal text-zinc-950">Hall of Fame</p>
+            <p className="text-xs text-zinc-500">Top student contributor standing</p>
           </div>
         </div>
 
@@ -90,8 +90,8 @@ export default function LeaderboardPage() {
             <Sparkles className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-2xl font-bold font-cal text-zinc-950">Real Value</p>
-            <p className="text-xs text-zinc-500">Direct cash payout upon redemption</p>
+            <p className="text-2xl font-bold font-cal text-zinc-950">100% Free</p>
+            <p className="text-xs text-zinc-500">Peer-powered open academic access</p>
           </div>
         </div>
       </div>

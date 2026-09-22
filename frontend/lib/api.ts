@@ -13,7 +13,11 @@ export const API_BASE_URL =
  * Handles both '/api/...' and '/...' inputs cleanly without duplicate prefixes.
  */
 export function getApiUrl(path: string): string {
-  const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
+  const isBrowser = typeof window !== 'undefined';
+  const customBase = process.env.NEXT_PUBLIC_API_URL;
+  
+  // In the browser, default to relative requests ('') so Next.js API route handlers are called directly
+  const base = (customBase || (isBrowser ? '' : 'http://localhost:3000')).replace(/\/+$/, '');
   let endpoint = path.startsWith('/') ? path : `/${path}`;
 
   // If base already ends with /api and path starts with /api/, avoid /api/api/...

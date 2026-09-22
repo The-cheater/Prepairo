@@ -20,7 +20,6 @@ import {
   Camera,
   Edit2,
   Check,
-  CreditCard,
   ArrowRight,
   ShieldAlert,
   Lightbulb
@@ -28,7 +27,6 @@ import {
 import Link from 'next/link';
 import { getApiUrl } from '@/frontend/lib/api';
 
-const REDEEM_THRESHOLD = 499;
 const MAX_AVATAR_SIZE_BYTES = 500 * 1024; // strictly 500 KB limit
 
 export default function UserDashboard() {
@@ -46,22 +44,19 @@ export default function UserDashboard() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Redeem modal state
-  const [isRedeemOpen, setIsRedeemOpen] = useState(false);
-  const [paymentInfo, setPaymentInfo] = useState('');
-  const [redeemSubmitting, setRedeemSubmitting] = useState(false);
-  const [redeemMessage, setRedeemMessage] = useState('');
-  const [redeemError, setRedeemError] = useState('');
-
   // Paper filter tab
   const [filterTab, setFilterTab] = useState<'all' | 'pending' | 'verified' | 'rejected'>('all');
   const [liveCredits, setLiveCredits] = useState<number | null>(null);
 
   // Fetch live credits from backend API
   const fetchUserCredits = async () => {
-    if (!profile?.id) return;
+    if (!profile?.id && !profile?.username) return;
     try {
-      const res = await fetch(getApiUrl(`/api/credits?userId=${encodeURIComponent(profile.id)}`));
+      const q = new URLSearchParams();
+      if (profile.id) q.set('userId', profile.id);
+      if (profile.username) q.set('username', profile.username);
+      if (profile.fullName) q.set('fullName', profile.fullName);
+      const res = await fetch(getApiUrl(`/api/credits?${q.toString()}`));
       if (res.ok) {
         const data = await res.json();
         if (typeof data.availableCredits === 'number') {
@@ -75,26 +70,44 @@ export default function UserDashboard() {
     }
   };
 
-  // Load user's papers & credits
+  // Load user's papers & credits with realtime sync
   useEffect(() => {
-    async function fetchUserPapers() {
+    let isMounted = true;
+
+    async function fetchUserPapers(showLoading = false) {
       if (!profile) return;
-      setIsLoadingPapers(true);
+      if (showLoading) setIsLoadingPapers(true);
       try {
-        // Fetch papers by uploader user
-        const res = await fetch(getApiUrl(`/api/papers?user=${encodeURIComponent(profile.username)}`));
-        if (res.ok) {
+        const queryParts: string[] = [];
+        if (profile.id) queryParts.push(`uploaderId=${encodeURIComponent(profile.id)}`);
+        if (profile.username) queryParts.push(`user=${encodeURIComponent(profile.username)}`);
+        const res = await fetch(getApiUrl(`/api/papers?${queryParts.join('&')}`));
+        if (res.ok && isMounted) {
           const data = await res.json();
           setPapers(data.papers || []);
         }
       } catch (err) {
         console.warn('Failed to fetch user papers:', err);
       } finally {
-        setIsLoadingPapers(false);
+        if (isMounted && showLoading) {
+          setIsLoadingPapers(false);
+        }
       }
     }
-    fetchUserPapers();
+
+    fetchUserPapers(true);
     fetchUserCredits();
+
+    // 4-second realtime polling interval
+    const pollInterval = setInterval(() => {
+      fetchUserPapers(false);
+      fetchUserCredits();
+    }, 4000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(pollInterval);
+    };
   }, [profile]);
 
   // Sync edit form with profile
@@ -141,49 +154,11 @@ export default function UserDashboard() {
     setTimeout(() => setSaveSuccess(false), 3000);
   };
 
-  // Submit Redeem Request
-  const handleRedeemSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!profile) return;
-    setRedeemError('');
-    setRedeemMessage('');
-
-    if (!paymentInfo.trim()) {
-      setRedeemError('Please provide your UPI ID or bank account details for transfer.');
-      return;
-    }
-
-    setRedeemSubmitting(true);
-    try {
-      const res = await fetch(getApiUrl('/api/redeem'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: profile.id,
-          amountCredits: REDEEM_THRESHOLD,
-          paymentDetails: paymentInfo.trim()
-        })
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        setRedeemMessage('Redemption request submitted! Admin will verify and process transfer within 24–48 hours.');
-        await refreshProfile();
-      } else {
-        setRedeemError(data.error || 'Failed to submit redemption request.');
-      }
-    } catch {
-      setRedeemError('Network error. Please try again later.');
-    } finally {
-      setRedeemSubmitting(false);
-    }
-  };
-
   if (!profile) {
     return (
       <div className="max-w-xl mx-auto px-4 py-20 text-center space-y-4">
         <h2 className="font-cal text-2xl font-bold text-zinc-900">Sign In to View Dashboard</h2>
-        <p className="text-sm text-zinc-500">Track your uploaded question papers, check verification feedback, and redeem reward credits.</p>
+        <p className="text-sm text-zinc-500">Track your uploaded question papers, check verification feedback, and view contributor credits.</p>
         <Link href="/login" className="btn-pill-black text-xs px-6 py-3 inline-block">
           Go to Sign In
         </Link>
@@ -200,9 +175,8 @@ export default function UserDashboard() {
   const verifiedCount = papers.filter((p) => p.status === 'verified').length;
   const rejectedCount = papers.filter((p) => p.status === 'rejected').length;
 
-  const currentCredits = liveCredits !== null ? liveCredits : (profile.totalCredits || 0);
-  const progressPercent = Math.min(100, Math.round((currentCredits / REDEEM_THRESHOLD) * 100));
-  const canRedeem = currentCredits >= REDEEM_THRESHOLD;
+  const paperDerivedCredits = verifiedCount * 10;
+  const currentCredits = Math.max(liveCredits ?? 0, profile.totalCredits ?? 0, paperDerivedCredits);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
@@ -367,16 +341,16 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* Right: Gamified Credits & Redeem Box */}
+        {/* Right: Gamified Community Credits & Leaderboard Standing */}
         <div className="lg:col-span-7 bg-zinc-950 text-white rounded-[32px] p-6 sm:p-8 shadow-sm space-y-6 relative overflow-hidden">
           
           <div className="flex items-center justify-between">
             <span className="pill-tag bg-white/10 text-amber-400 border border-white/10 flex items-center gap-1.5">
               <Zap className="w-3.5 h-3.5 fill-amber-400" />
-              Private Student Credits
+              Student Contributor Credits
             </span>
             <span className="text-xs text-zinc-400 font-mono">
-              Threshold: {REDEEM_THRESHOLD} Credits
+              +10 Credits / Verified Paper
             </span>
           </div>
 
@@ -385,56 +359,50 @@ export default function UserDashboard() {
               <span className="font-cal text-5xl sm:text-6xl font-bold tracking-tight text-white">
                 {currentCredits}
               </span>
-              <span className="text-amber-400 font-bold text-lg">Credits Available</span>
+              <span className="text-amber-400 font-bold text-lg">Credits Balance</span>
             </div>
             <p className="text-xs sm:text-sm text-zinc-400 max-w-lg font-normal">
-              Earn <strong className="text-white">10 credits</strong> for every question paper approved by the admin. Credits are visible only on your private dashboard and unlock real monetary redemption at 499 credits!
+              You earn <strong className="text-white">10 credits</strong> for every question paper verified by admin. Climb the community leaderboard and establish your recognized scholar standing!
             </p>
           </div>
 
-          {/* Progress Bar towards 499 */}
-          <div className="space-y-2 pt-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-zinc-400">Progress to Redeem Threshold</span>
-              <span className="font-mono font-bold text-amber-400">
-                {currentCredits} / {REDEEM_THRESHOLD} ({progressPercent}%)
+          {/* Contributor Milestone & Standing Stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+            <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10">
+              <span className="text-[11px] text-zinc-400 block">Verified Papers</span>
+              <span className="font-cal text-xl font-bold text-white mt-0.5 block">{verifiedCount}</span>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10">
+              <span className="text-[11px] text-zinc-400 block">Community Rank</span>
+              <span className="font-cal text-xl font-bold text-amber-400 mt-0.5 block">
+                {currentCredits > 0 ? 'Top Contributor' : 'Getting Started'}
               </span>
             </div>
-            <div className="w-full h-3 bg-zinc-800 rounded-full overflow-hidden p-0.5 border border-zinc-700">
-              <div
-                className="h-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 rounded-full transition-all duration-500 shadow-sm"
-                style={{ width: `${progressPercent}%` }}
-              />
+            <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 col-span-2 sm:col-span-1">
+              <span className="text-[11px] text-zinc-400 block">Badge Status</span>
+              <span className="font-cal text-xl font-bold text-emerald-400 mt-0.5 block">
+                {currentCredits >= 50 ? 'Gold Scholar' : currentCredits >= 20 ? 'Active Peer' : currentCredits > 0 ? 'Contributor' : 'New Member'}
+              </span>
             </div>
           </div>
 
-          {/* Redeem Action Row */}
+          {/* Action Row */}
           <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t border-zinc-800/80">
-            <div>
-              {canRedeem ? (
-                <p className="text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Redeem threshold reached! You can now request your payout.
-                </p>
+            <p className="text-xs text-zinc-400">
+              {currentCredits > 0 ? (
+                <span>Thank you for making exam prep stress-free for your peers!</span>
               ) : (
-                <p className="text-xs text-zinc-400">
-                  Earn <strong className="text-white">{REDEEM_THRESHOLD - currentCredits} more credits</strong> ({Math.ceil((REDEEM_THRESHOLD - currentCredits) / 10)} approved papers) to redeem cash value.
-                </p>
+                <span>Upload past papers from your previous semester to earn credits and lead the board.</span>
               )}
-            </div>
+            </p>
 
-            <button
-              onClick={() => setIsRedeemOpen(true)}
-              disabled={!canRedeem}
-              className={`w-full sm:w-auto px-6 py-2.5 rounded-full text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                canRedeem
-                  ? 'bg-amber-400 text-zinc-950 hover:bg-amber-300 shadow-lg shadow-amber-400/20'
-                  : 'bg-zinc-800 text-zinc-500 border border-zinc-700 cursor-not-allowed opacity-60'
-              }`}
+            <Link
+              href="/leaderboard"
+              className="w-full sm:w-auto px-6 py-2.5 rounded-full text-xs font-bold transition-all flex items-center justify-center gap-2 bg-amber-400 text-zinc-950 hover:bg-amber-300 shadow-lg shadow-amber-400/20"
             >
-              <CreditCard className="w-4 h-4" />
-              <span>Redeem Credits</span>
-            </button>
+              <Award className="w-4 h-4" />
+              <span>View Leaderboard</span>
+            </Link>
           </div>
 
           {/* Ambient Glow */}
@@ -637,82 +605,7 @@ export default function UserDashboard() {
         <PaperModal paper={selectedPaper} onClose={() => setSelectedPaper(null)} />
       )}
 
-      {/* Redeem Credits Modal */}
-      {isRedeemOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="relative w-full max-w-md bg-white rounded-[32px] shadow-2xl border border-zinc-200 p-6 sm:p-8 space-y-6">
-            <div className="space-y-1">
-              <span className="pill-tag bg-amber-50 text-amber-800 border border-amber-200">
-                Cash Payout Request
-              </span>
-              <h3 className="font-cal text-2xl font-bold text-zinc-950">
-                Redeem {REDEEM_THRESHOLD} Credits
-              </h3>
-              <p className="text-xs text-zinc-500 font-normal">
-                Congratulations on reaching the milestone! Enter your payment details (UPI ID or Bank Account) below.
-              </p>
-            </div>
 
-            {redeemError && (
-              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs">
-                {redeemError}
-              </div>
-            )}
-
-            {redeemMessage ? (
-              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs space-y-2 text-center">
-                <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
-                <p className="font-bold">{redeemMessage}</p>
-                <p className="text-zinc-600 text-[11px]">
-                  Admin has received your request and will process the transfer shortly.
-                </p>
-                <button
-                  onClick={() => setIsRedeemOpen(false)}
-                  className="btn-pill-black text-xs px-5 py-2 mt-2"
-                >
-                  Close
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleRedeemSubmit} className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-zinc-700">
-                    Payment Transfer Details (UPI ID / Bank Account)
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. yourname@oksbi or GPay / PhonePe number"
-                    value={paymentInfo}
-                    onChange={(e) => setPaymentInfo(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-black focus:bg-white"
-                  />
-                  <p className="text-[11px] text-zinc-400">
-                    We will send the payout directly to this UPI handle / account.
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsRedeemOpen(false)}
-                    className="btn-pill-white text-xs px-4 py-2"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={redeemSubmitting}
-                    className="btn-pill-black text-xs px-5 py-2 disabled:opacity-50"
-                  >
-                    {redeemSubmitting ? 'Submitting...' : 'Confirm Redemption'}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

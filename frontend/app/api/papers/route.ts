@@ -18,13 +18,22 @@ export async function GET(req: NextRequest) {
 
     let papers = getAllPapers();
 
-    if (uploaderId) {
-      papers = papers.filter(p => p.uploaderId === uploaderId);
-    } else if (user) {
-      papers = papers.filter(p => 
-        p.uploaderId === user || 
-        (p.uploaderName && p.uploaderName.toLowerCase() === user.toLowerCase())
-      );
+    if (uploaderId || user) {
+      papers = papers.filter(p => {
+        if (uploaderId && p.uploaderId === uploaderId) return true;
+        if (user) {
+          if (p.uploaderId === user) return true;
+          const uName = (p.uploaderName || '').toLowerCase();
+          const targetUser = user.toLowerCase();
+          if (uName === targetUser) return true;
+          const cleanUName = uName.replace(/[^a-z0-9]/g, '');
+          const cleanTarget = targetUser.replace(/[^a-z0-9]/g, '');
+          if (cleanUName && cleanTarget && (cleanUName.includes(cleanTarget) || cleanTarget.includes(cleanUName))) {
+            return true;
+          }
+        }
+        return false;
+      });
     }
 
     if (status) {

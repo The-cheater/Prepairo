@@ -239,12 +239,22 @@ export default function UploadForm() {
               <label className="text-xs font-semibold text-zinc-700">Program *</label>
               <select
                 value={program}
-                onChange={e => setProgram(e.target.value)}
+                onChange={e => {
+                  const p = e.target.value;
+                  setProgram(p);
+                  if ((p === 'M.Sc.' || p === 'Ph.D.') && academicYear > 2) {
+                    setAcademicYear(1);
+                    setSemester(1);
+                  }
+                  if ((p === 'M.Sc.' || p === 'Ph.D.') && schoolId === 'foundation') {
+                    setSchoolId('data-science');
+                  }
+                }}
                 className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-2xl text-xs sm:text-sm font-medium text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-950 transition-colors"
               >
-                <option value="BS-MS">BS-MS Dual Degree</option>
-                <option value="M.Sc.">M.Sc.</option>
-                <option value="Ph.D.">Ph.D. / I-Ph.D.</option>
+                <option value="BS-MS">BS-MS Dual Degree (10 Sem)</option>
+                <option value="M.Sc.">M.Sc. (4 Sem)</option>
+                <option value="Ph.D.">Ph.D. / I-Ph.D. (Max 4 Sem Coursework)</option>
               </select>
             </div>
 
@@ -257,11 +267,11 @@ export default function UploadForm() {
                   const y = Number(e.target.value);
                   setAcademicYear(y);
                   setSemester(y * 2 - 1);
-                  if (y <= 2) setSchoolId('foundation');
+                  if (program === 'BS-MS' && y <= 2) setSchoolId('foundation');
                 }}
                 className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-2xl text-xs sm:text-sm font-medium text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-950 transition-colors"
               >
-                {[1, 2, 3, 4, 5].map(y => (
+                {(program === 'BS-MS' ? [1, 2, 3, 4, 5] : [1, 2]).map(y => (
                   <option key={y} value={y}>Year {y}</option>
                 ))}
               </select>

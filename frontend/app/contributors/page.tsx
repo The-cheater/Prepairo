@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Award, ShieldCheck, Heart, Users, Sparkles, CheckCircle2, GraduationCap, ArrowRight, Coffee } from 'lucide-react';
+import { Award, ShieldCheck, Heart, Users, Sparkles, CheckCircle2, GraduationCap, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import BananaShakeCard from '@/frontend/components/support/BananaShakeCard';
 import { getApiUrl } from '@/frontend/lib/api';
 
 interface Contributor {
@@ -74,17 +73,6 @@ export default function ContributorsPage() {
               Prepairo is a clean, student-powered library where everyone can upload verified exam papers, earn reward credits, and prepare without the stress.
             </p>
 
-            <div className="flex flex-wrap items-center gap-2 justify-center md:justify-start pt-2">
-              <span className="pill-tag bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" /> Batch 26 Ph.D.
-              </span>
-              <span className="pill-tag bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 text-xs">
-                Open Access
-              </span>
-              <span className="pill-tag bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 text-xs">
-                Student Community
-              </span>
-            </div>
           </div>
         </div>
       </div>
@@ -181,42 +169,6 @@ export default function ContributorsPage() {
         </div>
       </div>
 
-      {/* 5. Support the Project (Buy Me a Banana Shake) — At the bottom with smaller font size */}
-      <div className="bg-amber-50/70 dark:bg-zinc-900 rounded-[24px] sm:rounded-[28px] border border-amber-200/70 dark:border-zinc-800 p-5 sm:p-8 shadow-sm">
-        <div className="flex flex-col md:flex-row items-center gap-6 justify-between max-w-3xl mx-auto">
-
-          {/* Compact 3D Flip Card */}
-          <div className="flex-shrink-0 mx-auto md:mx-0">
-            <BananaShakeCard />
-          </div>
-
-          {/* Compact Polite Text */}
-          <div className="space-y-3 text-center md:text-left flex-1">
-            <div>
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-200/60 dark:border-amber-800/60">
-                <Coffee className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                <span>Support the Project</span>
-              </span>
-              <h3 className="font-cal text-lg sm:text-xl font-bold tracking-tight text-zinc-950 dark:text-white mt-2">
-                Buy Me a Banana Shake
-              </h3>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed mt-1 max-w-md">
-                This platform is 100% free and open for every student. If it helped you save study time, feel free to buy me a ₹20 banana shake! Click the card to reveal the QR code.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3 justify-center md:justify-start pt-1">
-              <div className="bg-white dark:bg-zinc-800 rounded-xl border border-amber-200 dark:border-zinc-700 px-3.5 py-1.5 text-center shadow-2xs">
-                <span className="font-cal text-base font-bold text-zinc-950 dark:text-white">₹20</span>
-                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block -mt-0.5">One Shake</span>
-              </div>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-tight max-w-[240px]">
-                Every shake fuels late-night development and server costs for Prepairo!
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
 
     </div>
   );

@@ -2,7 +2,23 @@ import fs from 'fs';
 import path from 'path';
 import { PaperRecord, PaperRequest, SubjectSuggestion, INITIAL_PAPERS, INITIAL_REQUESTS, INITIAL_SUGGESTIONS } from '@/backend/models/mock-papers';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
+function resolveDataDir(): string {
+  const cwd = process.cwd();
+  const rootFrontendData = path.join(cwd, 'frontend', 'data');
+  if (fs.existsSync(rootFrontendData)) {
+    return rootFrontendData;
+  }
+  const cwdData = path.join(cwd, 'data');
+  if (fs.existsSync(cwdData)) {
+    return cwdData;
+  }
+  if (fs.existsSync(path.join(cwd, 'frontend'))) {
+    return rootFrontendData;
+  }
+  return cwdData;
+}
+
+const DATA_DIR = resolveDataDir();
 const PAPERS_FILE = path.join(DATA_DIR, 'papers.json');
 const REQUESTS_FILE = path.join(DATA_DIR, 'requests.json');
 const SUGGESTIONS_FILE = path.join(DATA_DIR, 'suggestions.json');

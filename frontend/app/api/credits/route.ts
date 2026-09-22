@@ -6,24 +6,23 @@ export const runtime = 'nodejs';
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId');
+    const userId = searchParams.get('userId') || '';
+    const username = searchParams.get('username') || '';
+    const fullName = searchParams.get('fullName') || '';
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+    if (!userId && !username) {
+      return NextResponse.json({ error: 'User identifier is required' }, { status: 400 });
     }
 
     try {
-      const data = await getUserCredits(userId);
+      const data = await getUserCredits(userId, username, fullName);
       return NextResponse.json(data);
     } catch (dbErr) {
-      // Fallback for offline/demo mode
       return NextResponse.json({
-        totalCredits: 30,
+        totalCredits: 0,
         redeemedCredits: 0,
-        availableCredits: 30,
-        papersApproved: 3,
-        canRedeem: false,
-        redeemThreshold: REDEEM_THRESHOLD,
+        availableCredits: 0,
+        papersApproved: 0,
         history: [],
       });
     }

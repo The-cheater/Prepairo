@@ -71,7 +71,7 @@ export default function StatTiles() {
       value: `${stats.contributorsCount ?? 0}`,
       caption: (stats.contributorsCount || 0) > 0 ? 'Students earning credits and helping friends' : 'Earn 10 credits for every paper you upload',
       icon: Users,
-      href: '/contributors'
+      href: '/leaderboard'
     },
     {
       title: 'Paper Requests',
