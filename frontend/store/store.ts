@@ -127,6 +127,14 @@ export class StoreManager {
     return true;
   }
 
+  public deletePaper(id: string): boolean {
+    const idx = this.papers.findIndex(p => p.id === id);
+    if (idx === -1) return false;
+    this.papers.splice(idx, 1);
+    this.persist();
+    return true;
+  }
+
   public checkDuplicates(subjectName: string, examYear: number, examType: string, semester: number): PaperRecord[] {
     return this.papers.filter(p => 
       p.subjectName.toLowerCase() === subjectName.toLowerCase() &&

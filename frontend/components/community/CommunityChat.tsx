@@ -20,11 +20,14 @@ import {
   Globe2,
   BookOpen,
   ArrowRight,
-  UserCheck
+  UserCheck,
+  X,
+  Bell
 } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getApiUrl } from '@/frontend/lib/api';
+import { useBrowserNotifications } from '@/frontend/hooks/useBrowserNotifications';
 
 export interface CommunityMessage {
   id: string;
@@ -73,6 +76,9 @@ export default function CommunityChat() {
   const [composerTag, setComposerTag] = useState('High Chance');
   const [isSending, setIsSending] = useState(false);
   const [likedMessageIds, setLikedMessageIds] = useState<Record<string, boolean>>({});
+  const [replyTarget, setReplyTarget] = useState<{ id: string; authorUsername: string; authorName: string; snippet: string } | null>(null);
+
+  const { permission, requestPermission } = useBrowserNotifications();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -127,12 +133,15 @@ export default function CommunityChat() {
           authorName: profile.fullName || profile.username,
           authorUsername: profile.username,
           authorAvatar: profile.avatarUrl || '',
-          authorBatch: profile.batch || 'Student'
+          authorBatch: profile.batch || 'Student',
+          replyToUsername: replyTarget?.authorUsername,
+          replyToMessageId: replyTarget?.id
         })
       });
 
       if (res.ok) {
         setInputText('');
+        setReplyTarget(null);
         await fetchMessages();
       }
     } catch {} finally {
@@ -161,9 +170,15 @@ export default function CommunityChat() {
     } catch {}
   };
 
-  const replyToAuthor = (authorUsername: string) => {
+  const replyToAuthor = (msg: CommunityMessage) => {
+    setReplyTarget({
+      id: msg.id,
+      authorUsername: msg.authorUsername,
+      authorName: msg.authorName,
+      snippet: msg.content.substring(0, 60),
+    });
     setInputText(prev => {
-      const tag = `@${authorUsername} `;
+      const tag = `@${msg.authorUsername} `;
       if (prev.includes(tag)) return prev;
       return `${tag}${prev}`;
     });
@@ -416,7 +431,7 @@ export default function CommunityChat() {
                     </button>
 
                     <button
-                      onClick={() => replyToAuthor(msg.authorUsername)}
+                      onClick={() => replyToAuthor(msg)}
                       className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
                     >
                       <AtSign className="w-3 h-3" />
@@ -469,6 +484,41 @@ export default function CommunityChat() {
                   );
                 })}
               </div>
+
+              {/* Replying To Question Bar */}
+              {replyTarget && (
+                <div className="flex items-center justify-between px-3 py-1.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-xl text-xs text-blue-950 dark:text-blue-200 animate-in fade-in">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span className="font-semibold text-blue-600 dark:text-blue-400 flex-shrink-0">Replying to @{replyTarget.authorUsername}:</span>
+                    <span className="truncate italic text-zinc-600 dark:text-zinc-400">&ldquo;{replyTarget.snippet}...&rdquo;</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setReplyTarget(null)}
+                    className="p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer ml-2 flex-shrink-0"
+                    title="Cancel reply"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
+              {/* Browser Alerts Opt-in Pill */}
+              {permission === 'default' && (
+                <div className="flex items-center justify-between px-3 py-1 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 rounded-xl text-[11px] text-amber-900 dark:text-amber-300">
+                  <span className="flex items-center gap-1.5">
+                    <Bell className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                    <span>Get desktop notifications when someone replies to your question</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={requestPermission}
+                    className="font-bold underline hover:text-amber-950 dark:hover:text-amber-100 cursor-pointer ml-2"
+                  >
+                    Enable
+                  </button>
+                </div>
+              )}
 
               {/* Text Input Row */}
               <div className="flex items-end gap-2">

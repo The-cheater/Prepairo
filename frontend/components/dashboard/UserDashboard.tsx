@@ -55,8 +55,27 @@ export default function UserDashboard() {
 
   // Paper filter tab
   const [filterTab, setFilterTab] = useState<'all' | 'pending' | 'verified' | 'rejected'>('all');
+  const [liveCredits, setLiveCredits] = useState<number | null>(null);
 
-  // Load user's papers
+  // Fetch live credits from backend API
+  const fetchUserCredits = async () => {
+    if (!profile?.id) return;
+    try {
+      const res = await fetch(getApiUrl(`/api/credits?userId=${encodeURIComponent(profile.id)}`));
+      if (res.ok) {
+        const data = await res.json();
+        if (typeof data.availableCredits === 'number') {
+          setLiveCredits(data.availableCredits);
+        } else if (typeof data.totalCredits === 'number') {
+          setLiveCredits(data.totalCredits);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch user credits:', err);
+    }
+  };
+
+  // Load user's papers & credits
   useEffect(() => {
     async function fetchUserPapers() {
       if (!profile) return;
@@ -75,6 +94,7 @@ export default function UserDashboard() {
       }
     }
     fetchUserPapers();
+    fetchUserCredits();
   }, [profile]);
 
   // Sync edit form with profile
@@ -180,7 +200,7 @@ export default function UserDashboard() {
   const verifiedCount = papers.filter((p) => p.status === 'verified').length;
   const rejectedCount = papers.filter((p) => p.status === 'rejected').length;
 
-  const currentCredits = profile.totalCredits || 0;
+  const currentCredits = liveCredits !== null ? liveCredits : (profile.totalCredits || 0);
   const progressPercent = Math.min(100, Math.round((currentCredits / REDEEM_THRESHOLD) * 100));
   const canRedeem = currentCredits >= REDEEM_THRESHOLD;
 

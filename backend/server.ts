@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import multer from 'multer';
 import path from 'path';
-import { getAllPapers, savePaper, updatePaper, getAllRequests, saveRequest, updateRequest } from './db/db';
+import { getAllPapers, savePaper, updatePaper, deletePaper, getAllRequests, saveRequest, updateRequest } from './db/db';
 import { PaperRecord, PaperRequest } from './models/mock-papers';
 import { ALL_SUBJECTS } from './models/subjects-seed';
 import { uploadPdfToCloudinary, formatPaperFileName } from './services/cloudinary';
@@ -181,6 +181,19 @@ app.patch('/api/papers/:id', async (req: Request, res: Response) => {
   }
 });
 
+app.delete('/api/papers/:id', (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    const deleted = deletePaper(id);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Paper not found' });
+    }
+    res.json({ success: true, message: 'Paper deleted successfully', id });
+  } catch (error: any) {
+    res.status(500).json({ error: error?.message || 'Failed to delete paper' });
+  }
+});
+
 // ==========================================
 // Upload Route (with Cloudinary)
 // ==========================================
@@ -266,16 +279,23 @@ app.get('/api/stats', (req: Request, res: Response) => {
   try {
     const papers = getAllPapers();
     const requests = getAllRequests();
-    const verified = papers.filter((p) => p.status === 'verified').length;
+    const verifiedPapers = papers.filter((p) => p.status === 'verified').length;
+    const pendingPapers = papers.filter((p) => p.status === 'pending').length;
     const totalSubjects = ALL_SUBJECTS.length;
-    const contributorsCount = new Set(papers.map((p) => p.uploaderName)).size;
+    const contributorsCount = new Set(
+      papers.map((p) => p.uploaderName).filter((name) => name && name.toLowerCase() !== 'anonymous')
+    ).size;
     const requestsFulfilled = requests.filter((r) => r.status === 'fulfilled').length;
+    const openRequests = requests.filter((r) => r.status === 'open').length;
 
     res.json({
-      verifiedPapers: verified,
+      verifiedPapers,
+      pendingPapers,
       totalSubjects,
       contributorsCount,
       requestsFulfilled,
+      openRequests,
+      totalPapers: papers.length,
     });
   } catch (error: any) {
     res.status(500).json({ error: error?.message || 'Failed to fetch stats' });

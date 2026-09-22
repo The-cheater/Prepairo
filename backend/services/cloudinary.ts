@@ -41,7 +41,7 @@ export async function uploadPdfToCloudinary(
         folder: 'iiser_tvm_pyq',
         public_id: publicIdWithoutExt,
         resource_type: 'raw',
-        format: 'pdf',
+        access_mode: 'public',
         overwrite: true
       },
       (error, result) => {

@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "id": "paper-1790053845335-pdc2026",
+    "subjectName": "Parallel and Distributed Computing",
+    "courseCode": "DSC421",
+    "schoolId": "data-science",
+    "program": "BS-MS",
+    "academicYear": 5,
+    "semester": 9,
+    "examYear": 2026,
+    "examType": "mid-sem",
+    "batch": "Batch 2021",
+    "fileUrl": "https://res.cloudinary.com/kskx0jpz/raw/upload/v1790054823/iiser_tvm_pyq/ParallelandDistributedComputing_midsem_2026",
+    "fileName": "ParallelandDistributedComputing_midsem_2026.pdf",
+    "fileSizeBytes": 1354401,
+    "status": "verified",
+    "uploaderName": "Rohan Kumar Jena",
+    "uploaderId": "4fa22db4-f415-4cd1-a7b2-5063435e97a3",
+    "isAnonymous": false,
+    "uploadedAt": "2026-09-22T05:10:45.335Z",
+    "viewCount": 0,
+    "downloadCount": 0,
+    "adminComment": "Verified by admin. Excellent contribution for Data Science!",
+    "verifiedAt": "2026-09-22T05:10:45.337Z"
+  }
+]

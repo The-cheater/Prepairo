@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, Check, MessageSquare, AtSign, ExternalLink } from 'lucide-react';
+import { Bell, Check, MessageSquare, AtSign, ExternalLink, Sparkles } from 'lucide-react';
 import { useAuth } from '@/frontend/components/auth/AuthProvider';
 import { useRouter } from 'next/navigation';
 import { getApiUrl } from '@/frontend/lib/api';
+import { useBrowserNotifications } from '@/frontend/hooks/useBrowserNotifications';
 
 export interface UserNotification {
   id: string;
@@ -27,14 +28,20 @@ export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const { permission, requestPermission, processIncomingNotifications } = useBrowserNotifications(
+    (url) => router.push(url)
+  );
+
   const fetchNotifications = async () => {
     if (!profile?.username) return;
     try {
       const res = await fetch(getApiUrl(`/api/notifications?username=${encodeURIComponent(profile.username)}`));
       if (res.ok) {
         const data = await res.json();
-        setNotifications(data.notifications || []);
+        const incoming = data.notifications || [];
+        setNotifications(incoming);
         setUnreadCount(data.unreadCount || 0);
+        processIncomingNotifications(incoming);
       }
     } catch {}
   };
@@ -129,6 +136,27 @@ export default function NotificationBell() {
             )}
           </div>
 
+          {/* Browser Notification Opt-In Banner (Only when default) */}
+          {permission === 'default' && (
+            <div className="p-3 bg-blue-50/80 dark:bg-blue-950/40 border-b border-blue-100 dark:border-blue-900/50 flex items-center justify-between gap-2 text-xs">
+              <div className="space-y-0.5">
+                <p className="font-semibold text-blue-950 dark:text-blue-200 text-[11px] flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-blue-600" />
+                  <span>Desktop Reply Alerts</span>
+                </p>
+                <p className="text-[10px] text-blue-700 dark:text-blue-400 leading-tight">
+                  Get notified only when someone answers your question
+                </p>
+              </div>
+              <button
+                onClick={requestPermission}
+                className="px-2.5 py-1 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold cursor-pointer transition-colors shadow-2xs whitespace-nowrap"
+              >
+                Enable
+              </button>
+            </div>
+          )}
+
           {/* Notifications List */}
           <div className="max-h-[360px] overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800/60">
             {notifications.length > 0 ? (
@@ -154,7 +182,7 @@ export default function NotificationBell() {
                       </div>
                     )}
                     <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-zinc-900 text-white flex items-center justify-center text-[9px]">
-                      <AtSign className="w-2.5 h-2.5" />
+                      {notif.type === 'reply' ? <MessageSquare className="w-2.5 h-2.5 text-amber-400" /> : <AtSign className="w-2.5 h-2.5" />}
                     </span>
                   </div>
 
@@ -164,7 +192,13 @@ export default function NotificationBell() {
                       <strong className="font-semibold text-zinc-950 dark:text-white">
                         {notif.senderName}
                       </strong>{' '}
-                      tagged you in{' '}
+                      {notif.type === 'reply' ? (
+                        <>
+                          <span className="text-blue-600 dark:text-blue-400 font-semibold">replied to your question</span> in{' '}
+                        </>
+                      ) : (
+                        'tagged you in '
+                      )}
                       <span className="font-semibold text-blue-600 dark:text-blue-400 font-mono">
                         #{notif.channelId}
                       </span>

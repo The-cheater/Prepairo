@@ -32,7 +32,17 @@ export default function StatTiles() {
         const res = await fetch(getApiUrl('/api/stats'));
         if (res.ok) {
           const data = await res.json();
-          setStats(data);
+          setStats(prev => ({
+            ...prev,
+            ...data,
+            verifiedPapers: Number(data.verifiedPapers) || 0,
+            totalSubjects: Number(data.totalSubjects) || 0,
+            contributorsCount: Number(data.contributorsCount) || 0,
+            openRequests: Number(data.openRequests) || 0,
+            requestsFulfilled: Number(data.requestsFulfilled) || 0,
+            pendingPapers: Number(data.pendingPapers) || 0,
+            totalPapers: Number(data.totalPapers) || 0,
+          }));
         }
       } catch (err) {
         console.warn('Failed to fetch stats:', err);
@@ -44,29 +54,29 @@ export default function StatTiles() {
   const tiles = [
     {
       title: 'Approved Papers',
-      value: `${stats.verifiedPapers}`,
-      caption: stats.verifiedPapers > 0 ? 'Verified by admin and ready for exam practice' : 'Be the first student to upload a past paper',
+      value: `${stats.verifiedPapers ?? 0}`,
+      caption: (stats.verifiedPapers || 0) > 0 ? 'Verified by admin and ready for exam practice' : 'Be the first student to upload a past paper',
       icon: FileCheck,
       href: '/browse'
     },
     {
       title: 'Subjects Covered',
-      value: `${stats.totalSubjects}`,
+      value: `${stats.totalSubjects ?? 0}`,
       caption: 'Organized cleanly across all batches and semesters',
       icon: BookOpen,
       href: '/browse'
     },
     {
       title: 'Student Contributors',
-      value: `${stats.contributorsCount}`,
-      caption: stats.contributorsCount > 0 ? 'Students earning credits and helping friends' : 'Earn 10 credits for every paper you upload',
+      value: `${stats.contributorsCount ?? 0}`,
+      caption: (stats.contributorsCount || 0) > 0 ? 'Students earning credits and helping friends' : 'Earn 10 credits for every paper you upload',
       icon: Users,
       href: '/contributors'
     },
     {
       title: 'Paper Requests',
-      value: `${stats.openRequests}`,
-      caption: stats.openRequests > 0 ? 'Papers students need right now—upload to earn credits' : 'Need a paper? Post a quick request',
+      value: `${stats.openRequests ?? 0}`,
+      caption: (stats.openRequests || 0) > 0 ? 'Papers students need right now—upload to earn credits' : 'Need a paper? Post a quick request',
       icon: HelpCircle,
       href: '/requests'
     }

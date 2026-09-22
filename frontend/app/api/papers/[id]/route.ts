@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updatePaper } from '@/backend/db/db';
+import { updatePaper, deletePaper } from '@/backend/db/db';
 import { awardCredits } from '@/backend/services/credits';
 
 export const runtime = 'nodejs';
@@ -41,6 +41,21 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ success: true, paper: updated });
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Failed to update paper' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    const deleted = deletePaper(id);
+
+    if (!deleted) {
+      return NextResponse.json({ error: 'Paper not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, message: 'Paper deleted successfully', id });
+  } catch (error: any) {
+    return NextResponse.json({ error: error?.message || 'Failed to delete paper' }, { status: 500 });
   }
 }
 

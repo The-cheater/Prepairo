@@ -25,20 +25,28 @@ function ensureDataFiles() {
   }
 }
 
+let papersCache: PaperRecord[] | null = null;
+let lastPapersMtime = 0;
+
 export function getAllPapers(): PaperRecord[] {
   ensureDataFiles();
   try {
+    const stats = fs.statSync(PAPERS_FILE);
+    if (papersCache && stats.mtimeMs === lastPapersMtime) {
+      return papersCache;
+    }
     const content = fs.readFileSync(PAPERS_FILE, 'utf-8');
-    return JSON.parse(content);
+    papersCache = JSON.parse(content);
+    lastPapersMtime = stats.mtimeMs;
+    return papersCache || [];
   } catch {
-    return INITIAL_PAPERS;
+    return papersCache || INITIAL_PAPERS;
   }
 }
 
 export function savePaper(paper: PaperRecord): PaperRecord {
   ensureDataFiles();
-  const papers = getAllPapers();
-  // If duplicate ID exists, replace, else prepend
+  const papers = getAllPapers().slice();
   const idx = papers.findIndex(p => p.id === paper.id);
   if (idx !== -1) {
     papers[idx] = paper;
@@ -46,17 +54,39 @@ export function savePaper(paper: PaperRecord): PaperRecord {
     papers.unshift(paper);
   }
   fs.writeFileSync(PAPERS_FILE, JSON.stringify(papers, null, 2), 'utf-8');
+  papersCache = papers;
+  try {
+    lastPapersMtime = fs.statSync(PAPERS_FILE).mtimeMs;
+  } catch {}
   return paper;
 }
 
 export function updatePaper(id: string, updates: Partial<PaperRecord>): PaperRecord | null {
   ensureDataFiles();
-  const papers = getAllPapers();
+  const papers = getAllPapers().slice();
   const idx = papers.findIndex(p => p.id === id);
   if (idx === -1) return null;
   papers[idx] = { ...papers[idx], ...updates };
   fs.writeFileSync(PAPERS_FILE, JSON.stringify(papers, null, 2), 'utf-8');
+  papersCache = papers;
+  try {
+    lastPapersMtime = fs.statSync(PAPERS_FILE).mtimeMs;
+  } catch {}
   return papers[idx];
+}
+
+export function deletePaper(id: string): boolean {
+  ensureDataFiles();
+  const papers = getAllPapers().slice();
+  const idx = papers.findIndex(p => p.id === id);
+  if (idx === -1) return false;
+  papers.splice(idx, 1);
+  fs.writeFileSync(PAPERS_FILE, JSON.stringify(papers, null, 2), 'utf-8');
+  papersCache = papers;
+  try {
+    lastPapersMtime = fs.statSync(PAPERS_FILE).mtimeMs;
+  } catch {}
+  return true;
 }
 
 export function getAllRequests(): PaperRequest[] {

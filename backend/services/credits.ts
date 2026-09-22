@@ -9,50 +9,72 @@ const REDEEM_THRESHOLD = 499;
  */
 export async function awardCredits(userId: string, paperId: string) {
   const supabase = await createSupabaseServer();
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(paperId);
 
   // Check if credits already awarded for this paper
-  const { data: existing } = await supabase
-    .from('credits')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('paper_id', paperId)
-    .single();
+  if (isUuid) {
+    try {
+      const { data: existing } = await supabase
+        .from('credits')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('paper_id', paperId)
+        .single();
 
-  if (existing) return { alreadyAwarded: true };
+      if (existing) return { alreadyAwarded: true };
+    } catch {}
+  }
 
-  // Insert credit record
-  const { error: creditError } = await supabase.from('credits').insert({
-    user_id: userId,
-    paper_id: paperId,
-    amount: CREDITS_PER_PAPER,
-    reason: 'Paper approved by admin',
-  });
+  // Insert credit record (gracefully handles non-UUID or external paper IDs)
+  try {
+    const insertPayload: Record<string, any> = {
+      user_id: userId,
+      amount: CREDITS_PER_PAPER,
+      reason: `Paper approved by admin (${paperId})`,
+    };
+    if (isUuid) {
+      insertPayload.paper_id = paperId;
+    }
 
-  if (creditError) throw creditError;
+    const { error: creditError } = await supabase.from('credits').insert(insertPayload);
+    if (creditError) {
+      // Retry without paper_id if foreign key failed
+      if (insertPayload.paper_id) {
+        delete insertPayload.paper_id;
+        await supabase.from('credits').insert(insertPayload);
+      }
+    }
+  } catch (err) {
+    console.warn('Credits ledger insert notice:', err);
+  }
 
   // Update profile counters
-  const { error: profileError } = await supabase.rpc('increment_profile_credits', {
-    p_user_id: userId,
-    p_amount: CREDITS_PER_PAPER,
-  });
+  try {
+    const { error: profileError } = await supabase.rpc('increment_profile_credits', {
+      p_user_id: userId,
+      p_amount: CREDITS_PER_PAPER,
+    });
 
-  // Fallback if RPC doesn't exist yet — direct update
-  if (profileError) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('total_credits, papers_approved')
-      .eq('id', userId)
-      .single();
-
-    if (profile) {
-      await supabase
+    // Fallback if RPC doesn't exist — direct update
+    if (profileError) {
+      const { data: profile } = await supabase
         .from('profiles')
-        .update({
-          total_credits: (profile.total_credits || 0) + CREDITS_PER_PAPER,
-          papers_approved: (profile.papers_approved || 0) + 1,
-        })
-        .eq('id', userId);
+        .select('total_credits, papers_approved')
+        .eq('id', userId)
+        .single();
+
+      if (profile) {
+        await supabase
+          .from('profiles')
+          .update({
+            total_credits: (profile.total_credits || 0) + CREDITS_PER_PAPER,
+            papers_approved: (profile.papers_approved || 0) + 1,
+          })
+          .eq('id', userId);
+      }
     }
+  } catch (err) {
+    console.warn('Profile counters update notice:', err);
   }
 
   return { awarded: CREDITS_PER_PAPER };

@@ -13,7 +13,10 @@ export default function HeroSection() {
         const res = await fetch(getApiUrl('/api/stats'));
         if (res.ok) {
           const data = await res.json();
-          setStats({ totalSubjects: data.totalSubjects, verifiedPapers: data.verifiedPapers });
+          setStats({
+            totalSubjects: Number(data.totalSubjects) || 0,
+            verifiedPapers: Number(data.verifiedPapers) || 0,
+          });
         }
       } catch {}
     };
