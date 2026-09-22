@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/frontend/components/auth/AuthProvider';
-import CreditBadge from '@/frontend/components/gamification/CreditBadge';
 import ThemeToggle from '@/frontend/components/theme/ThemeToggle';
 import NotificationBell from '@/frontend/components/notifications/NotificationBell';
 import { LogOut, User as UserIcon, Trophy, Sparkles, Menu, X, ArrowRight, ShieldCheck, Settings, MessageSquare } from 'lucide-react';
@@ -79,9 +78,6 @@ export default function Navbar() {
 
           {user && profile ? (
             <div className="flex items-center gap-1.5 sm:gap-2">
-              {/* Credits Pill */}
-              <CreditBadge credits={profile.totalCredits} size="sm" />
-
               {/* User Dashboard Profile Button */}
               <Link
                 href="/dashboard"
@@ -233,8 +229,7 @@ export default function Navbar() {
                 </button>
               </div>
 
-              <div className="flex items-center justify-between pt-1">
-                <CreditBadge credits={profile.totalCredits} size="sm" />
+              <div className="flex items-center justify-end pt-1">
                 <button
                   onClick={() => {
                     logout();

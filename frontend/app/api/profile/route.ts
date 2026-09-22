@@ -65,6 +65,12 @@ export async function PATCH(req: NextRequest) {
       .select()
       .single();
 
+    // Also save in local ledger for offline and instant leaderboard persistence
+    try {
+      const { saveLocalProfile } = await import('@/backend/services/credits');
+      saveLocalProfile(userId, updates);
+    } catch {}
+
     if (error) {
       // Fallback: return success with updated data so offline/demo mode continues
       return NextResponse.json({ success: true, profile: { id: userId, ...updates } });

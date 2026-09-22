@@ -411,6 +411,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .from('profiles')
         .update(dbUpdates)
         .eq('id', profile.id);
+
+      // Also notify backend API to keep leaderboard avatars and credentials in sync
+      const { getApiUrl } = await import('@/frontend/lib/api');
+      await fetch(getApiUrl('/api/profile'), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: profile.id, ...updates })
+      });
     } catch (e) {
       console.warn('Failed to update profile on supabase:', e);
     }

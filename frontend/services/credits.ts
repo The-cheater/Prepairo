@@ -6,6 +6,46 @@ import { getAllPapers } from '@/backend/db/db';
 const CREDITS_PER_PAPER = 10;
 const REDEEM_THRESHOLD = 499;
 
+function getProfilesFile(): string {
+  const cwd = process.cwd();
+  const rootFrontendData = path.join(cwd, 'frontend', 'data');
+  if (fs.existsSync(rootFrontendData)) {
+    return path.join(rootFrontendData, 'profiles.json');
+  }
+  const cwdData = path.join(cwd, 'data');
+  if (fs.existsSync(cwdData)) {
+    return path.join(cwdData, 'profiles.json');
+  }
+  if (fs.existsSync(path.join(cwd, 'frontend'))) {
+    return path.join(rootFrontendData, 'profiles.json');
+  }
+  return path.join(cwdData, 'profiles.json');
+}
+
+export function loadLocalProfiles(): Record<string, any> {
+  try {
+    const file = getProfilesFile();
+    if (!fs.existsSync(file)) return {};
+    const content = fs.readFileSync(file, 'utf-8');
+    return JSON.parse(content) || {};
+  } catch {
+    return {};
+  }
+}
+
+export function saveLocalProfile(userId: string, data: Record<string, any>) {
+  try {
+    const file = getProfilesFile();
+    const dir = path.dirname(file);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    const all = loadLocalProfiles();
+    all[userId] = { ...(all[userId] || {}), ...data, updatedAt: new Date().toISOString() };
+    fs.writeFileSync(file, JSON.stringify(all, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('Local profile save warning:', err);
+  }
+}
+
 function getCreditsFile(): string {
   const cwd = process.cwd();
   const rootFrontendData = path.join(cwd, 'frontend', 'data');
@@ -263,7 +303,29 @@ export async function getLeaderboard(limit = 25) {
     }
   } catch {}
 
-  // 3. Ensure profile overrides are cleanly applied
+  // 3. Merge locally stored profiles (from avatar updates or local edits)
+  const localProfiles = loadLocalProfiles();
+  for (const [uid, prof] of Object.entries(localProfiles)) {
+    let matchKey = Object.keys(contributorMap).find(k => {
+      const entry = contributorMap[k];
+      if (entry.id === uid) return true;
+      if (prof.username && entry.username.toLowerCase() === prof.username.toLowerCase()) return true;
+      if (prof.full_name && entry.full_name.toLowerCase() === prof.full_name.toLowerCase()) return true;
+      return false;
+    });
+
+    if (matchKey) {
+      if (prof.avatar_url && prof.avatar_url !== '/logo.png') {
+        contributorMap[matchKey].avatar_url = prof.avatar_url;
+      }
+      if (prof.course) contributorMap[matchKey].course = prof.course;
+      if (prof.department) contributorMap[matchKey].department = prof.department;
+      if (prof.username) contributorMap[matchKey].username = prof.username;
+      if (prof.full_name) contributorMap[matchKey].full_name = prof.full_name;
+    }
+  }
+
+  // 4. Ensure profile overrides are cleanly applied
   for (const item of Object.values(contributorMap)) {
     if (item.id === '4fa22db4-f415-4cd1-a7b2-5063435e97a3' || 
         (item.username && item.username.toLowerCase().includes('rohan')) || 
@@ -276,6 +338,10 @@ export async function getLeaderboard(limit = 25) {
       }
       if (item.username === 'Rohan Kumar Jena' || !item.username) {
         item.username = 'rohanjena';
+      }
+      // If avatar is the default logo.png, clear it so the contributor initials avatar renders elegantly unless customized
+      if (item.avatar_url === '/logo.png') {
+        item.avatar_url = '';
       }
     }
   }
