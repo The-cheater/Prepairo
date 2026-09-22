@@ -73,33 +73,33 @@ export default function FeaturedSchools() {
                   className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500 ease-out pointer-events-none"
                 />
 
-                {/* Rich Gradient Dark Overlay for crystal clear readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/85 to-zinc-950/45 group-hover:via-zinc-950/80 transition-colors pointer-events-none" />
+                {/* Dark Overlay set to 20% opacity */}
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors pointer-events-none" />
 
                 {/* Content */}
                 <div className="relative z-10">
-                  <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white group-hover:bg-white group-hover:text-black flex items-center justify-center transition-all mb-4 shadow-sm">
+                  <div className="w-12 h-12 rounded-2xl bg-black/40 backdrop-blur-md border border-white/20 text-white group-hover:bg-white group-hover:text-black flex items-center justify-center transition-all mb-4 shadow-md">
                     <Icon className="w-6 h-6" />
                   </div>
 
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-white/15 backdrop-blur-md text-white font-bold border border-white/25 shadow-sm">
+                    <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-black/50 backdrop-blur-md text-white font-bold border border-white/30 shadow-md">
                       {school.code}
                     </span>
                   </div>
 
-                  <h3 className="font-cal text-xl font-bold text-white group-hover:text-amber-300 transition-colors drop-shadow-sm">
+                  <h3 className="font-cal text-xl font-bold text-white group-hover:text-amber-300 transition-colors drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                     {school.name}
                   </h3>
 
-                  <p className="text-xs text-zinc-300 font-normal mt-2 line-clamp-3 leading-relaxed drop-shadow-sm">
+                  <p className="text-xs text-zinc-100 font-medium mt-2 line-clamp-3 leading-relaxed drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
                     {school.description}
                   </p>
                 </div>
 
-                <div className="relative z-10 mt-6 pt-4 border-t border-white/15 flex items-center justify-between text-xs font-semibold text-white">
+                <div className="relative z-10 mt-6 pt-4 border-t border-white/25 flex items-center justify-between text-xs font-semibold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                   <span className="group-hover:text-amber-300 transition-colors">Browse Papers</span>
-                  <div className="w-6 h-6 rounded-full bg-white/10 group-hover:bg-white group-hover:text-black flex items-center justify-center transition-all">
+                  <div className="w-6 h-6 rounded-full bg-black/40 backdrop-blur-md group-hover:bg-white group-hover:text-black flex items-center justify-center transition-all shadow-md">
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                   </div>
                 </div>
