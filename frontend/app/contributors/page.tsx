@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Heart, Sparkles, GraduationCap, Mail, Coffee, ExternalLink, Code2 } from 'lucide-react';
+import { Heart, Sparkles, GraduationCap, Coffee } from 'lucide-react';
 import BananaShakeCard from '@/frontend/components/support/BananaShakeCard';
 
 export default function ContributorsPage() {
@@ -43,16 +43,6 @@ export default function ContributorsPage() {
             </p>
 
             <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-3">
-              <a
-                href="https://github.com/The-cheater/Prepairo"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 transition-colors"
-              >
-                <Code2 className="w-3.5 h-3.5" />
-                <span>GitHub Repository</span>
-                <ExternalLink className="w-3 h-3 text-zinc-400 ml-0.5" />
-              </a>
               <span className="text-xs text-zinc-400 font-normal">
                 Built with Next.js, Fastify & Supabase
               </span>

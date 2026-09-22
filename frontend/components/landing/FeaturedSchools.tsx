@@ -58,35 +58,50 @@ export default function FeaturedSchools() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {SCHOOLS.map(school => {
             const Icon = getSchoolIcon(school.id);
+            const imageSrc = `/schools/${school.id}.jpg`;
+
             return (
               <Link
                 key={school.id}
                 href={`/browse?school=${school.id}`}
-                className="group bg-white dark:bg-zinc-900 rounded-[28px] border border-zinc-200/90 dark:border-zinc-800 p-6 shadow-sm hover-lift transition-all flex flex-col justify-between"
+                className="group relative rounded-[28px] border border-zinc-200/80 dark:border-zinc-800 p-6 shadow-sm hover-lift transition-all flex flex-col justify-between overflow-hidden min-h-[300px]"
               >
-                <div>
-                  <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 group-hover:bg-black group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-black flex items-center justify-center transition-colors mb-4">
+                {/* Full-Card Animated / Cartoon Background Image */}
+                <img
+                  src={imageSrc}
+                  alt={school.name}
+                  className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500 ease-out pointer-events-none"
+                />
+
+                {/* Rich Gradient Dark Overlay for crystal clear readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/85 to-zinc-950/45 group-hover:via-zinc-950/80 transition-colors pointer-events-none" />
+
+                {/* Content */}
+                <div className="relative z-10">
+                  <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white group-hover:bg-white group-hover:text-black flex items-center justify-center transition-all mb-4 shadow-sm">
                     <Icon className="w-6 h-6" />
                   </div>
 
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-semibold border border-zinc-200 dark:border-zinc-700">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-white/15 backdrop-blur-md text-white font-bold border border-white/25 shadow-sm">
                       {school.code}
                     </span>
                   </div>
 
-                  <h3 className="font-cal text-lg font-bold text-zinc-950 dark:text-white group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
+                  <h3 className="font-cal text-xl font-bold text-white group-hover:text-amber-300 transition-colors drop-shadow-sm">
                     {school.name}
                   </h3>
 
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal mt-2 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-zinc-300 font-normal mt-2 line-clamp-3 leading-relaxed drop-shadow-sm">
                     {school.description}
                   </p>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                  <span>Browse Papers</span>
-                  <ArrowRight className="w-4 h-4 text-zinc-400 group-hover:translate-x-1 group-hover:text-black dark:group-hover:text-white transition-all" />
+                <div className="relative z-10 mt-6 pt-4 border-t border-white/15 flex items-center justify-between text-xs font-semibold text-white">
+                  <span className="group-hover:text-amber-300 transition-colors">Browse Papers</span>
+                  <div className="w-6 h-6 rounded-full bg-white/10 group-hover:bg-white group-hover:text-black flex items-center justify-center transition-all">
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
                 </div>
               </Link>
             );
