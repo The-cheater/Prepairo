@@ -201,12 +201,14 @@ export async function getLeaderboard(limit = 25) {
 
     const key = existingKey || idKey || paper.uploaderName || `usr_${Math.random().toString(36).substring(2, 6)}`;
     if (!contributorMap[key]) {
+      const isRohan = (paper.uploaderId === '4fa22db4-f415-4cd1-a7b2-5063435e97a3') || 
+                      (paper.uploaderName && paper.uploaderName.toLowerCase().includes('rohan'));
       contributorMap[key] = {
         id: paper.uploaderId || `usr_${Math.random().toString(36).substring(2, 6)}`,
-        username: paper.uploaderName || 'Contributor',
+        username: isRohan ? 'rohanjena' : (paper.uploaderName || 'Contributor'),
         full_name: paper.uploaderName || 'Student Contributor',
-        department: paper.schoolId === 'data-science' ? 'Data Science' : paper.schoolId === 'physics' ? 'School of Physics' : paper.schoolId || 'IISER TVM',
-        course: paper.program || 'Student',
+        department: isRohan ? 'Data Science' : (paper.schoolId === 'data-science' ? 'Data Science' : paper.schoolId === 'physics' ? 'School of Physics' : paper.schoolId || 'IISER TVM'),
+        course: isRohan ? 'Ph.D.' : 'Student',
         avatar_url: '/logo.png',
         papers_approved: 0,
         total_credits: 0,
@@ -221,10 +223,7 @@ export async function getLeaderboard(limit = 25) {
     const supabase = await createSupabaseServer();
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, username, full_name, department, course, avatar_url, total_credits, papers_approved')
-      .gt('total_credits', 0)
-      .order('total_credits', { ascending: false })
-      .limit(limit);
+      .select('id, username, full_name, department, course, avatar_url, total_credits, papers_approved');
 
     if (profiles && profiles.length > 0) {
       for (const p of profiles) {
@@ -233,6 +232,9 @@ export async function getLeaderboard(limit = 25) {
           if (p.id && entry.id === p.id) return true;
           if (p.username && entry.username.toLowerCase() === (p.username || '').toLowerCase()) return true;
           if (p.full_name && entry.full_name.toLowerCase() === (p.full_name || '').toLowerCase()) return true;
+          const cleanP = (p.full_name || p.username || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          const cleanE = (entry.full_name || entry.username || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          if (cleanP && cleanE && (cleanP.includes(cleanE) || cleanE.includes(cleanP))) return true;
           return false;
         });
 
@@ -240,7 +242,7 @@ export async function getLeaderboard(limit = 25) {
         if (!contributorMap[key]) {
           contributorMap[key] = {
             id: p.id,
-            username: p.username,
+            username: p.username || 'Contributor',
             full_name: p.full_name || p.username,
             department: p.department || 'IISER TVM',
             course: p.course || 'Student',
@@ -253,12 +255,30 @@ export async function getLeaderboard(limit = 25) {
           contributorMap[key].papers_approved = Math.max(contributorMap[key].papers_approved, p.papers_approved || 0);
           if (p.avatar_url) contributorMap[key].avatar_url = p.avatar_url;
           if (p.full_name) contributorMap[key].full_name = p.full_name;
+          if (p.username) contributorMap[key].username = p.username;
           if (p.department) contributorMap[key].department = p.department;
           if (p.course) contributorMap[key].course = p.course;
         }
       }
     }
   } catch {}
+
+  // 3. Ensure profile overrides are cleanly applied
+  for (const item of Object.values(contributorMap)) {
+    if (item.id === '4fa22db4-f415-4cd1-a7b2-5063435e97a3' || 
+        (item.username && item.username.toLowerCase().includes('rohan')) || 
+        (item.full_name && item.full_name.toLowerCase().includes('rohan'))) {
+      if (!item.course || item.course === 'BS-MS' || item.course === 'Student') {
+        item.course = 'Ph.D.';
+      }
+      if (!item.department || item.department === 'Foundation' || item.department === 'IISER TVM') {
+        item.department = 'Data Science';
+      }
+      if (item.username === 'Rohan Kumar Jena' || !item.username) {
+        item.username = 'rohanjena';
+      }
+    }
+  }
 
   const list = Object.values(contributorMap);
   list.sort((a, b) => b.total_credits - a.total_credits);

@@ -103,7 +103,7 @@ export default function CommunityChat() {
         const data = await res.json();
         setMessages(data.messages || []);
       }
-    } catch {}
+    } catch { }
   };
 
   useEffect(() => {
@@ -144,7 +144,7 @@ export default function CommunityChat() {
         setReplyTarget(null);
         await fetchMessages();
       }
-    } catch {} finally {
+    } catch { } finally {
       setIsSending(false);
     }
   };
@@ -167,7 +167,7 @@ export default function CommunityChat() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messageId, action: 'like' })
       });
-    } catch {}
+    } catch { }
   };
 
   const replyToAuthor = (msg: CommunityMessage) => {
@@ -216,10 +216,10 @@ export default function CommunityChat() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-      
+
       {/* 1. Left Channel Sidebar (Desktop) & Top Tabs (Mobile) */}
       <div className="lg:col-span-4 space-y-3">
-        
+
         {/* Mobile Horizontal Scrollable Channel Selector */}
         <div className="lg:hidden flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none">
           {CHANNELS.map(ch => {
@@ -229,11 +229,10 @@ export default function CommunityChat() {
               <button
                 key={ch.id}
                 onClick={() => selectChannel(ch.id)}
-                className={`px-3.5 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition-all cursor-pointer ${
-                  isActive
+                className={`px-3.5 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition-all cursor-pointer ${isActive
                     ? 'bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 shadow-sm'
                     : 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                }`}
+                  }`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span>{ch.name.split(' ')[0]}</span>
@@ -261,16 +260,14 @@ export default function CommunityChat() {
                 <button
                   key={ch.id}
                   onClick={() => selectChannel(ch.id)}
-                  className={`w-full text-left p-3 rounded-2xl transition-all cursor-pointer flex items-center justify-between group ${
-                    isActive
+                  className={`w-full text-left p-3 rounded-2xl transition-all cursor-pointer flex items-center justify-between group ${isActive
                       ? 'bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 shadow-xs'
                       : 'hover:bg-zinc-100 dark:hover:bg-zinc-800/70 text-zinc-700 dark:text-zinc-300'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      isActive ? 'bg-white/20 dark:bg-black/10' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
-                    }`}>
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-white/20 dark:bg-black/10' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                      }`}>
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
@@ -302,7 +299,7 @@ export default function CommunityChat() {
 
       {/* 2. Main Chat Feed & Composer */}
       <div className="lg:col-span-8 bg-white dark:bg-zinc-900 rounded-[32px] border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col h-[700px] overflow-hidden">
-        
+
         {/* Active Channel Header */}
         <div className="px-5 py-4 border-b border-zinc-100 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-zinc-50/50 dark:bg-zinc-900/50">
           <div>
@@ -327,11 +324,10 @@ export default function CommunityChat() {
                 <button
                   key={t.id}
                   onClick={() => setSelectedTag(t.id)}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all cursor-pointer inline-flex items-center gap-1.5 ${
-                    selectedTag === t.id
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all cursor-pointer inline-flex items-center gap-1.5 ${selectedTag === t.id
                       ? 'bg-black dark:bg-white text-white dark:text-black shadow-2xs'
                       : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
-                  }`}
+                    }`}
                 >
                   {TagIcon && <TagIcon className="w-3 h-3" />}
                   <span>{t.short || t.label}</span>
@@ -351,13 +347,12 @@ export default function CommunityChat() {
               return (
                 <div
                   key={msg.id}
-                  className={`p-4 rounded-3xl border transition-all ${
-                    isTagged
+                  className={`p-4 rounded-3xl border transition-all ${isTagged
                       ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-300/80 dark:border-amber-800/80 shadow-xs'
                       : isCurrentUser
-                      ? 'bg-blue-50/30 dark:bg-blue-950/10 border-blue-200/60 dark:border-blue-900/40'
-                      : 'bg-zinc-50/60 dark:bg-zinc-800/40 border-zinc-200/80 dark:border-zinc-800'
-                  }`}
+                        ? 'bg-blue-50/30 dark:bg-blue-950/10 border-blue-200/60 dark:border-blue-900/40'
+                        : 'bg-zinc-50/60 dark:bg-zinc-800/40 border-zinc-200/80 dark:border-zinc-800'
+                    }`}
                 >
                   {/* Top Bar: Author, Tag & Timestamp */}
                   <div className="flex items-start justify-between gap-3">
@@ -395,8 +390,8 @@ export default function CommunityChat() {
 
                     {/* Doubt Tag Badge */}
                     {msg.tag && (() => {
-                      const tagMeta = DOUBT_TAGS.find(t => 
-                        t.id.toLowerCase() === msg.tag?.toLowerCase() || 
+                      const tagMeta = DOUBT_TAGS.find(t =>
+                        t.id.toLowerCase() === msg.tag?.toLowerCase() ||
                         t.label.toLowerCase() === msg.tag?.toLowerCase() ||
                         (t.short && msg.tag?.toLowerCase().includes(t.short.toLowerCase()))
                       );
@@ -420,11 +415,10 @@ export default function CommunityChat() {
                   <div className="mt-3 pt-2.5 border-t border-zinc-200/60 dark:border-zinc-800 flex items-center justify-between text-xs">
                     <button
                       onClick={() => handleLike(msg.id)}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors cursor-pointer ${
-                        likedMessageIds[msg.id]
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors cursor-pointer ${likedMessageIds[msg.id]
                           ? 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40'
                           : 'text-zinc-500 dark:text-zinc-400 hover:text-rose-600 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                      }`}
+                        }`}
                     >
                       <Heart className={`w-3.5 h-3.5 ${likedMessageIds[msg.id] ? 'fill-rose-500 text-rose-500' : ''}`} />
                       <span>{msg.likes > 0 ? `${msg.likes} Helpful` : 'Helpful'}</span>
@@ -459,7 +453,7 @@ export default function CommunityChat() {
         <div className="p-3 sm:p-4 border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-2.5">
           {profile ? (
             <form onSubmit={handleSendMessage} className="space-y-2">
-              
+
               {/* Tag Selector Bar */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
                 <span className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 flex-shrink-0">
@@ -472,11 +466,10 @@ export default function CommunityChat() {
                       key={t.id}
                       type="button"
                       onClick={() => setComposerTag(t.id)}
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap transition-all cursor-pointer inline-flex items-center gap-1 ${
-                        composerTag === t.id
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap transition-all cursor-pointer inline-flex items-center gap-1 ${composerTag === t.id
                           ? 'bg-blue-600 text-white shadow-2xs'
                           : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
-                      }`}
+                        }`}
                     >
                       {TagIcon && <TagIcon className="w-3 h-3" />}
                       <span>{t.short || t.label}</span>
@@ -508,7 +501,7 @@ export default function CommunityChat() {
                 <div className="flex items-center justify-between px-3 py-1 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 rounded-xl text-[11px] text-amber-900 dark:text-amber-300">
                   <span className="flex items-center gap-1.5">
                     <Bell className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                    <span>Get desktop notifications when someone replies to your question</span>
+                    <span>Get notifications when someone replies to your question</span>
                   </span>
                   <button
                     type="button"
