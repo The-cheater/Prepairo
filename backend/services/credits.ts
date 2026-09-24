@@ -278,8 +278,18 @@ export async function getLeaderboard(limit = 25) {
           return false;
         });
 
-        const key: string = matchKey || p.id || p.username || `profile_${Math.random()}`;
-        if (!contributorMap[key]) {
+        // If matched an existing paper contributor, update their metadata & stats
+        if (matchKey) {
+          contributorMap[matchKey].total_credits = Math.max(contributorMap[matchKey].total_credits, p.total_credits || 0);
+          contributorMap[matchKey].papers_approved = Math.max(contributorMap[matchKey].papers_approved, p.papers_approved || 0);
+          if (p.avatar_url) contributorMap[matchKey].avatar_url = p.avatar_url;
+          if (p.full_name) contributorMap[matchKey].full_name = p.full_name;
+          if (p.username) contributorMap[matchKey].username = p.username;
+          if (p.department) contributorMap[matchKey].department = p.department;
+          if (p.course) contributorMap[matchKey].course = p.course;
+        } else if ((p.papers_approved && p.papers_approved > 0) || (p.total_credits && p.total_credits > 0)) {
+          // Only add from Supabase if they have actually contributed approved papers or credits
+          const key: string = p.id || p.username || `profile_${Math.random()}`;
           contributorMap[key] = {
             id: p.id,
             username: p.username || 'Contributor',
@@ -290,14 +300,6 @@ export async function getLeaderboard(limit = 25) {
             papers_approved: p.papers_approved || 0,
             total_credits: p.total_credits || 0,
           };
-        } else {
-          contributorMap[key].total_credits = Math.max(contributorMap[key].total_credits, p.total_credits || 0);
-          contributorMap[key].papers_approved = Math.max(contributorMap[key].papers_approved, p.papers_approved || 0);
-          if (p.avatar_url) contributorMap[key].avatar_url = p.avatar_url;
-          if (p.full_name) contributorMap[key].full_name = p.full_name;
-          if (p.username) contributorMap[key].username = p.username;
-          if (p.department) contributorMap[key].department = p.department;
-          if (p.course) contributorMap[key].course = p.course;
         }
       }
     }
@@ -346,7 +348,10 @@ export async function getLeaderboard(limit = 25) {
     }
   }
 
-  const list = Object.values(contributorMap);
+  // 5. Strict contributor filter: ONLY include users who have at least 1 approved paper or > 0 credits
+  const list = Object.values(contributorMap).filter(
+    (c: any) => (c.papers_approved && c.papers_approved > 0) || (c.total_credits && c.total_credits > 0)
+  );
   list.sort((a, b) => b.total_credits - a.total_credits);
 
   return list.slice(0, limit).map((p, idx) => ({
