@@ -76,7 +76,7 @@ export default function AdminDashboard() {
     }
   }, []);
 
-  // Fetch papers from backend & store
+  // Fetch papers & suggestions from backend & store
   const refreshData = async () => {
     try {
       const res = await fetch(getApiUrl('/api/papers'));
@@ -89,7 +89,25 @@ export default function AdminDashboard() {
     } catch {
       setPapers(store.getPapers());
     }
-    setSuggestions(store.getSuggestions());
+
+    try {
+      const resSug = await fetch(getApiUrl('/api/suggestions'));
+      if (resSug.ok) {
+        const dataSug = await resSug.json();
+        if (dataSug.suggestions && dataSug.suggestions.length > 0) {
+          // Merge with any local storage suggestions
+          const backendIds = new Set((dataSug.suggestions as SubjectSuggestion[]).map(s => s.id));
+          const localOnly = store.getSuggestions().filter(s => !backendIds.has(s.id));
+          setSuggestions([...dataSug.suggestions, ...localOnly]);
+        } else {
+          setSuggestions(store.getSuggestions());
+        }
+      } else {
+        setSuggestions(store.getSuggestions());
+      }
+    } catch {
+      setSuggestions(store.getSuggestions());
+    }
   };
 
   useEffect(() => {
@@ -199,12 +217,34 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleApproveSuggestion = (id: string) => {
+  const handleApproveSuggestion = async (id: string) => {
+    try {
+      await fetch(getApiUrl(`/api/suggestions/${id}`), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'approved',
+          adminNotes: 'Approved by admin and added to catalog.',
+        }),
+      });
+    } catch {}
     store.updateSuggestionStatus(id, 'approved', 'Approved by admin and added to catalog.');
+    refreshData();
   };
 
-  const handleRejectSuggestion = (id: string) => {
+  const handleRejectSuggestion = async (id: string) => {
+    try {
+      await fetch(getApiUrl(`/api/suggestions/${id}`), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'rejected',
+          adminNotes: 'Course is already present or invalid entry.',
+        }),
+      });
+    } catch {}
     store.updateSuggestionStatus(id, 'rejected', 'Course is already present or invalid entry.');
+    refreshData();
   };
 
   // If not authenticated as Admin, show Admin Login Screen

@@ -3,8 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import multer from 'multer';
 import path from 'path';
-import { getAllPapers, savePaper, updatePaper, deletePaper, getAllRequests, saveRequest, updateRequest } from './db/db';
-import { PaperRecord, PaperRequest } from './models/mock-papers';
+import { getAllPapers, savePaper, updatePaper, deletePaper, getAllRequests, saveRequest, updateRequest, getAllSuggestions, saveSuggestion, updateSuggestion, getAllCustomSubjects, saveCustomSubject } from './db/db';
+import { PaperRecord, PaperRequest, SubjectSuggestion } from './models/mock-papers';
 import { ALL_SUBJECTS } from './models/subjects-seed';
 import { uploadPdfToCloudinary, formatPaperFileName } from './services/cloudinary';
 import { awardCredits, getUserCredits, getLeaderboard, requestRedeem, REDEEM_THRESHOLD } from './services/credits';
@@ -352,6 +352,95 @@ app.patch('/api/requests/:id', (req: Request, res: Response) => {
     res.json({ success: true, request: updated });
   } catch (error: any) {
     res.status(500).json({ error: error?.message || 'Failed to update request' });
+  }
+});
+
+// ==========================================
+// Subject Suggestions & Catalog Routes
+// ==========================================
+app.get('/api/suggestions', (req: Request, res: Response) => {
+  try {
+    const { status } = req.query;
+    let suggestions = getAllSuggestions();
+    if (status && status !== 'all') {
+      suggestions = suggestions.filter((s) => s.status === status);
+    }
+    res.json({ suggestions, total: suggestions.length });
+  } catch (error: any) {
+    res.status(500).json({ error: error?.message || 'Failed to fetch suggestions' });
+  }
+});
+
+app.post('/api/suggestions', (req: Request, res: Response) => {
+  try {
+    const body = req.body;
+    const newSug: SubjectSuggestion = {
+      id: body.id || `sug-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      suggestedName: body.suggestedName || body.name,
+      courseCode: body.courseCode,
+      schoolName: body.schoolName || 'Foundation',
+      semester: Number(body.semester || 1),
+      studentName: body.studentName || 'Anonymous Student',
+      status: body.status || 'pending',
+      adminNotes: body.adminNotes || 'Submitted by student',
+      createdAt: body.createdAt || new Date().toISOString(),
+    };
+    saveSuggestion(newSug);
+    res.json({ success: true, suggestion: newSug });
+  } catch (error: any) {
+    res.status(500).json({ error: error?.message || 'Failed to create suggestion' });
+  }
+});
+
+app.patch('/api/suggestions/:id', (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    const body = req.body;
+    const updated = updateSuggestion(id, body);
+    if (!updated) {
+      return res.status(404).json({ error: 'Suggestion not found' });
+    }
+
+    // If approved, automatically add/map to custom subjects catalog
+    if (body.status === 'approved') {
+      const schoolMap: Record<string, string> = {
+        'School of Biology': 'biology',
+        'School of Chemistry': 'chemistry',
+        'School of Data Science': 'data-science',
+        'School of Earth & Environmental Sciences': 'earth-sciences',
+        'School of Mathematics': 'mathematics',
+        'School of Physics': 'physics',
+        'General & Interdisciplinary': 'interdisciplinary',
+        'Foundation & Core Sciences': 'foundation',
+      };
+
+      const schoolId = schoolMap[updated.schoolName] || (updated.schoolName.toLowerCase().includes('data') ? 'data-science' : 'foundation');
+      const year = Math.ceil(updated.semester / 2) || 1;
+
+      saveCustomSubject({
+        id: `custom-sub-${Date.now()}`,
+        schoolId,
+        name: updated.suggestedName,
+        code: updated.courseCode,
+        year,
+        semesters: [updated.semester],
+        isFoundation: schoolId === 'foundation' && year <= 2,
+      });
+    }
+
+    res.json({ success: true, suggestion: updated });
+  } catch (error: any) {
+    res.status(500).json({ error: error?.message || 'Failed to update suggestion' });
+  }
+});
+
+app.get('/api/subjects', (req: Request, res: Response) => {
+  try {
+    const custom = getAllCustomSubjects();
+    const all = [...ALL_SUBJECTS, ...custom];
+    res.json({ subjects: all, total: all.length });
+  } catch (error: any) {
+    res.status(500).json({ error: error?.message || 'Failed to fetch subjects' });
   }
 });
 

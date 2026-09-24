@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { X, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
 import { SCHOOLS } from '@/backend/models/subjects-seed';
 import { store } from '@/frontend/store/store';
+import { getApiUrl } from '@/frontend/lib/api';
 
 interface SubjectSuggestModalProps {
   isOpen: boolean;
@@ -24,27 +25,49 @@ export default function SubjectSuggestModal({
   const [semester, setSemester] = useState(defaultSemester);
   const [studentName, setStudentName] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subjectName.trim()) return;
+    if (!subjectName.trim() || isSubmitting) return;
 
-    store.addSuggestion({
+    setIsSubmitting(true);
+    const resolvedSchoolName = SCHOOLS.find(s => s.id === schoolName || s.name === schoolName)?.name || schoolName;
+
+    const payload = {
       suggestedName: subjectName.trim(),
       courseCode: courseCode.trim() || undefined,
-      schoolName,
+      schoolName: resolvedSchoolName,
       semester,
       studentName: studentName.trim() || 'Anonymous Student',
       adminNotes: 'Submitted via "Can\'t find my subject" form.'
-    });
+    };
 
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      onClose();
-    }, 2200);
+    try {
+      const res = await fetch(getApiUrl('/api/suggestions'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        store.addSuggestion(data.suggestion || payload);
+      } else {
+        store.addSuggestion(payload);
+      }
+    } catch {
+      store.addSuggestion(payload);
+    } finally {
+      setIsSubmitting(false);
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        onClose();
+      }, 2200);
+    }
   };
 
   return (

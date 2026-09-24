@@ -21,6 +21,25 @@ export default function GuidedBrowse() {
   const [isLoading, setIsLoading] = useState(false);
   const [isTreeOpenOnMobile, setIsTreeOpenOnMobile] = useState(false);
 
+  const [allSubjects, setAllSubjects] = useState<SubjectItem[]>(ALL_SUBJECTS);
+
+  useEffect(() => {
+    async function loadSubjects() {
+      try {
+        const res = await fetch(getApiUrl('/api/subjects'));
+        if (res.ok) {
+          const data = await res.json();
+          if (data.subjects && data.subjects.length > 0) {
+            setAllSubjects(data.subjects);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load subjects in GuidedBrowse:', err);
+      }
+    }
+    loadSubjects();
+  }, []);
+
   // Available academic years based on program
   const availableYears = useMemo(() => {
     if (program === 'BS-MS') return [1, 2, 3, 4, 5];
@@ -59,18 +78,18 @@ export default function GuidedBrowse() {
 
   // Filter subjects based on school, year, and semester
   const filteredSubjects = useMemo(() => {
-    return ALL_SUBJECTS.filter(sub => {
+    return allSubjects.filter(sub => {
       if (selectedSchool === 'foundation') {
         return sub.schoolId === 'foundation' && sub.year === academicYear;
       }
       return sub.schoolId === selectedSchool;
     });
-  }, [selectedSchool, academicYear]);
+  }, [selectedSchool, academicYear, allSubjects]);
 
   // Prepare items for BranchedMenu: show all subjects without truncation
   const branchedMenuItems: BranchedMenuItem[] = useMemo(() => {
     return SCHOOLS.map(school => {
-      const schoolSubjects = ALL_SUBJECTS.filter(s => s.schoolId === school.id);
+      const schoolSubjects = allSubjects.filter(s => s.schoolId === school.id);
       return {
         label: school.name,
         children: schoolSubjects.map(sub => ({
@@ -79,7 +98,7 @@ export default function GuidedBrowse() {
         }))
       };
     });
-  }, []);
+  }, [allSubjects]);
 
   // Fetch papers from backend when subject changes
   useEffect(() => {

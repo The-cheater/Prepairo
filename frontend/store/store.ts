@@ -176,14 +176,24 @@ export class StoreManager {
     return this.suggestions.filter(s => s.status === status);
   }
 
-  public addSuggestion(sug: Omit<SubjectSuggestion, 'id' | 'status' | 'createdAt'>): SubjectSuggestion {
+  public addSuggestion(sug: Partial<SubjectSuggestion> & { suggestedName: string; schoolName: string; semester: number }): SubjectSuggestion {
     const newSug: SubjectSuggestion = {
-      ...sug,
-      id: `sug-${Date.now()}`,
-      status: 'pending',
-      createdAt: new Date().toISOString()
+      id: sug.id || `sug-${Date.now()}`,
+      suggestedName: sug.suggestedName,
+      courseCode: sug.courseCode,
+      schoolName: sug.schoolName,
+      semester: sug.semester,
+      studentName: sug.studentName || 'Anonymous Student',
+      status: (sug.status as any) || 'pending',
+      adminNotes: sug.adminNotes,
+      createdAt: sug.createdAt || new Date().toISOString()
     };
-    this.suggestions.unshift(newSug);
+    const existingIdx = this.suggestions.findIndex(s => s.id === newSug.id);
+    if (existingIdx !== -1) {
+      this.suggestions[existingIdx] = newSug;
+    } else {
+      this.suggestions.unshift(newSug);
+    }
     this.persist();
     return newSug;
   }

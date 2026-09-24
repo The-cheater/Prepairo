@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { UploadCloud, FileText, CheckCircle2, AlertTriangle, X, ShieldCheck, Zap } from 'lucide-react';
-import { SCHOOLS, ALL_SUBJECTS } from '@/backend/models/subjects-seed';
+import { SCHOOLS, ALL_SUBJECTS, SubjectItem } from '@/backend/models/subjects-seed';
 import SubjectSuggestModal from './SubjectSuggestModal';
 import confetti from 'canvas-confetti';
 import Link from 'next/link';
@@ -33,6 +33,25 @@ export default function UploadForm() {
   const [errorMsg, setErrorMsg] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [allSubjects, setAllSubjects] = useState<SubjectItem[]>(ALL_SUBJECTS);
+
+  useEffect(() => {
+    async function loadSubjects() {
+      try {
+        const res = await fetch(getApiUrl('/api/subjects'));
+        if (res.ok) {
+          const data = await res.json();
+          if (data.subjects && data.subjects.length > 0) {
+            setAllSubjects(data.subjects);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch subjects catalog:', err);
+      }
+    }
+    loadSubjects();
+  }, []);
+
   useEffect(() => {
     if (profile) {
       if (profile.fullName) setUploaderName(profile.fullName);
@@ -42,11 +61,11 @@ export default function UploadForm() {
 
   // Available subjects based on school
   const filteredSubjects = useMemo(() => {
-    return ALL_SUBJECTS.filter(s => {
+    return allSubjects.filter(s => {
       if (schoolId === 'foundation') return s.schoolId === 'foundation';
       return s.schoolId === schoolId;
     });
-  }, [schoolId]);
+  }, [schoolId, allSubjects]);
 
   const handleSubjectChange = (name: string) => {
     setSubjectName(name);
@@ -302,7 +321,7 @@ export default function UploadForm() {
                 value={schoolId}
                 onChange={e => {
                   setSchoolId(e.target.value);
-                  const first = ALL_SUBJECTS.find(s => s.schoolId === e.target.value);
+                  const first = allSubjects.find(s => s.schoolId === e.target.value);
                   if (first) {
                     setSubjectName(first.name);
                   }

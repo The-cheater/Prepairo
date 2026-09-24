@@ -22,6 +22,7 @@ const DATA_DIR = resolveDataDir();
 const PAPERS_FILE = path.join(DATA_DIR, 'papers.json');
 const REQUESTS_FILE = path.join(DATA_DIR, 'requests.json');
 const SUGGESTIONS_FILE = path.join(DATA_DIR, 'suggestions.json');
+const SUBJECTS_FILE = path.join(DATA_DIR, 'custom-subjects.json');
 
 function ensureDataFiles() {
   if (!fs.existsSync(DATA_DIR)) {
@@ -38,6 +39,10 @@ function ensureDataFiles() {
 
   if (!fs.existsSync(SUGGESTIONS_FILE)) {
     fs.writeFileSync(SUGGESTIONS_FILE, JSON.stringify(INITIAL_SUGGESTIONS, null, 2), 'utf-8');
+  }
+
+  if (!fs.existsSync(SUBJECTS_FILE)) {
+    fs.writeFileSync(SUBJECTS_FILE, JSON.stringify([], null, 2), 'utf-8');
   }
 }
 
@@ -170,4 +175,27 @@ export function updateSuggestion(id: string, updates: Partial<SubjectSuggestion>
   suggestions[idx] = { ...suggestions[idx], ...updates };
   fs.writeFileSync(SUGGESTIONS_FILE, JSON.stringify(suggestions, null, 2), 'utf-8');
   return suggestions[idx];
+}
+
+export function getAllCustomSubjects(): any[] {
+  ensureDataFiles();
+  try {
+    const content = fs.readFileSync(SUBJECTS_FILE, 'utf-8');
+    return JSON.parse(content);
+  } catch {
+    return [];
+  }
+}
+
+export function saveCustomSubject(subject: any): any {
+  ensureDataFiles();
+  const subjects = getAllCustomSubjects();
+  const idx = subjects.findIndex(s => s.id === subject.id || (s.name && subject.name && s.name.toLowerCase() === subject.name.toLowerCase()));
+  if (idx !== -1) {
+    subjects[idx] = { ...subjects[idx], ...subject };
+  } else {
+    subjects.push(subject);
+  }
+  fs.writeFileSync(SUBJECTS_FILE, JSON.stringify(subjects, null, 2), 'utf-8');
+  return subject;
 }
