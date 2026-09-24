@@ -444,6 +444,31 @@ app.get('/api/subjects', (req: Request, res: Response) => {
   }
 });
 
+app.post('/api/subjects', (req: Request, res: Response) => {
+  try {
+    const { name, code, schoolId, year, semesters } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'Subject name is required.' });
+    }
+
+    const newSubject = {
+      id: req.body.id || `custom-sub-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      name: name.trim(),
+      code: code ? code.trim().toUpperCase() : undefined,
+      schoolId: schoolId || 'foundation',
+      year: Number(year || 1),
+      semesters: Array.isArray(semesters) && semesters.length > 0 ? semesters.map(Number) : [Number(year || 1) * 2 - 1],
+      isFoundation: schoolId === 'foundation',
+      createdAt: new Date().toISOString(),
+    };
+
+    const saved = saveCustomSubject(newSubject);
+    res.json({ success: true, subject: saved });
+  } catch (error: any) {
+    res.status(500).json({ error: error?.message || 'Failed to save subject' });
+  }
+});
+
 // ==========================================
 // Gamification: Credits & Leaderboard
 // ==========================================

@@ -19,11 +19,16 @@ import {
   MessageSquare,
   Award,
   Zap,
-  Trash2
+  Trash2,
+  Plus,
+  BookPlus,
+  FolderPlus,
+  Loader2
 } from 'lucide-react';
 import PaperModal from '@/frontend/components/papers/PaperModal';
 import confetti from 'canvas-confetti';
 import { getApiUrl } from '@/frontend/lib/api';
+import { SCHOOLS } from '@/backend/models/subjects-seed';
 
 const ADMIN_STORAGE_KEY = 'prepairo_admin_authenticated';
 
@@ -33,11 +38,21 @@ export default function AdminDashboard() {
   const [adminPassword, setAdminPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  const [activeTab, setActiveTab] = useState<'pending' | 'verified' | 'rejected' | 'suggestions' | 'duplicates'>('pending');
+  const [activeTab, setActiveTab] = useState<'pending' | 'verified' | 'rejected' | 'suggestions' | 'add-subject' | 'duplicates'>('pending');
   const [papers, setPapers] = useState<PaperRecord[]>([]);
   const [suggestions, setSuggestions] = useState<SubjectSuggestion[]>([]);
   const [selectedPaper, setSelectedPaper] = useState<PaperRecord | null>(null);
   const [editingPaper, setEditingPaper] = useState<PaperRecord | null>(null);
+
+  // New Subject form state
+  const [newSubName, setNewSubName] = useState('');
+  const [newSubCode, setNewSubCode] = useState('');
+  const [newSubSchoolId, setNewSubSchoolId] = useState('foundation');
+  const [newSubYear, setNewSubYear] = useState(1);
+  const [newSubSemester, setNewSubSemester] = useState(1);
+  const [isSubmittingSubject, setIsSubmittingSubject] = useState(false);
+  const [subjectSuccessMsg, setSubjectSuccessMsg] = useState('');
+  const [subjectErrorMsg, setSubjectErrorMsg] = useState('');
 
   // Approval Modal state
   const [approvingPaper, setApprovingPaper] = useState<PaperRecord | null>(null);
@@ -247,7 +262,54 @@ export default function AdminDashboard() {
     refreshData();
   };
 
-  // If not authenticated as Admin, show Admin Login Screen
+  const handleCreateNewSubject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubjectErrorMsg('');
+    setSubjectSuccessMsg('');
+
+    if (!newSubName.trim()) {
+      setSubjectErrorMsg('Subject name is required.');
+      return;
+    }
+
+    setIsSubmittingSubject(true);
+
+    try {
+      const res = await fetch(getApiUrl('/api/subjects'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newSubName.trim(),
+          code: newSubCode.trim() || undefined,
+          schoolId: newSubSchoolId,
+          year: newSubYear,
+          semesters: [newSubSemester],
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setSubjectErrorMsg(data.error || 'Failed to add subject.');
+        setIsSubmittingSubject(false);
+        return;
+      }
+
+      setSubjectSuccessMsg(`"${newSubName.trim()}" has been successfully added to the catalog!`);
+      setNewSubName('');
+      setNewSubCode('');
+
+      try {
+        confetti({ particleCount: 75, spread: 60, origin: { y: 0.6 } });
+      } catch {}
+
+      refreshData();
+    } catch (err: any) {
+      setSubjectErrorMsg(err?.message || 'Network error while adding subject.');
+    } finally {
+      setIsSubmittingSubject(false);
+    }
+  };
   if (!isAdminAuthed) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center p-4">
@@ -379,6 +441,7 @@ export default function AdminDashboard() {
           { id: 'verified', label: `Verified Catalog (${verifiedPapers.length})` },
           { id: 'rejected', label: `Disapproved Papers (${rejectedPapers.length})` },
           { id: 'suggestions', label: `Subject Suggestions (${pendingSuggestions.length})` },
+          { id: 'add-subject', label: `+ Add New Subject` },
           { id: 'duplicates', label: `Duplicate Scanner (${duplicateGroups.length})` },
         ].map((tab) => (
           <button
@@ -647,6 +710,145 @@ export default function AdminDashboard() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Content for Add New Subject */}
+      {activeTab === 'add-subject' && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-[32px] border border-zinc-200 p-6 sm:p-8 shadow-sm">
+            <div className="flex items-center gap-3.5 mb-6 pb-6 border-b border-zinc-100">
+              <div className="w-12 h-12 rounded-2xl bg-zinc-950 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+                <BookPlus className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-cal text-xl font-bold text-zinc-950">Add New Subject to Catalog</h3>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  Expand the syllabus repository. Once added, students can immediately choose this subject during paper uploads and guided browsing.
+                </p>
+              </div>
+            </div>
+
+            {subjectErrorMsg && (
+              <div className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                <span>{subjectErrorMsg}</span>
+              </div>
+            )}
+
+            {subjectSuccessMsg && (
+              <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <span>{subjectSuccessMsg}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleCreateNewSubject} className="space-y-5 max-w-2xl">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2">
+                  Subject / Course Name <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Advanced Quantum Mechanics or General Chemistry II"
+                  value={newSubName}
+                  onChange={(e) => setNewSubName(e.target.value)}
+                  className="w-full px-4 py-3 text-sm rounded-2xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-black bg-zinc-50/50 focus:bg-white transition-all"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2">
+                    Course Code <span className="text-zinc-400 font-normal lowercase">(optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. PHY411 or CHM121"
+                    value={newSubCode}
+                    onChange={(e) => setNewSubCode(e.target.value.toUpperCase())}
+                    className="w-full px-4 py-3 text-sm rounded-2xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-black bg-zinc-50/50 focus:bg-white font-mono transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2">
+                    School / Department <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    value={newSubSchoolId}
+                    onChange={(e) => setNewSubSchoolId(e.target.value)}
+                    className="w-full px-4 py-3 text-sm rounded-2xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-black bg-zinc-50/50 focus:bg-white transition-all cursor-pointer"
+                  >
+                    {SCHOOLS.map((school) => (
+                      <option key={school.id} value={school.id}>
+                        {school.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2">
+                    Academic Year
+                  </label>
+                  <select
+                    value={newSubYear}
+                    onChange={(e) => {
+                      const yr = Number(e.target.value);
+                      setNewSubYear(yr);
+                      setNewSubSemester(yr * 2 - 1);
+                    }}
+                    className="w-full px-4 py-3 text-sm rounded-2xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-black bg-zinc-50/50 focus:bg-white transition-all cursor-pointer"
+                  >
+                    {[1, 2, 3, 4, 5].map((y) => (
+                      <option key={y} value={y}>
+                        Year {y} ({y === 1 ? '1st' : y === 2 ? '2nd' : y === 3 ? '3rd' : `${y}th`} Year)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2">
+                    Semester
+                  </label>
+                  <select
+                    value={newSubSemester}
+                    onChange={(e) => setNewSubSemester(Number(e.target.value))}
+                    className="w-full px-4 py-3 text-sm rounded-2xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-black bg-zinc-50/50 focus:bg-white transition-all cursor-pointer"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((s) => (
+                      <option key={s} value={s}>
+                        Semester {s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isSubmittingSubject || !newSubName.trim()}
+                  className="btn-pill-black px-6 py-3 text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-all"
+                >
+                  {isSubmittingSubject ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Adding to Catalog...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" /> Add Subject to Repository
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
